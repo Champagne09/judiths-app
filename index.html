@@ -1,0 +1,3149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<title>Judith's App</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#C4818A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Judith's App">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.3/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+/* ── DESIGN TOKENS ─────────────────────────────── */
+:root {
+  --bg:        #FFFFFF;
+  --surface:   #FFF5F7;
+  --surface2:  #FFEDF1;
+  --surface3:  #FFE2E8;
+  --border:    #F0C4CC;
+  --border2:   #E8AFBA;
+  --text:      #1A0A0F;
+  --text2:     #4A2030;
+  --muted:     #9B7080;
+  --green:     #C4818A;
+  --green2:    #D4939B;
+  --green3:    #A86570;
+  --green-dim: rgba(196,129,138,0.15);
+  --green-glow:rgba(196,129,138,0.35);
+  --amber:     #C8891A;
+  --red:       #C0392B;
+  --pink:      #F4A7B5;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 4px 24px rgba(26,10,15,0.10);
+  --nav-h:     60px;
+  --sidebar-w: 220px;
+  --font:      'Inter', system-ui, sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+}
+
+/* ── RESET ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: var(--font); cursor: pointer; border: none; background: none; }
+input, select, textarea { font-family: var(--font); }
+a { color: inherit; text-decoration: none; }
+ul, ol { list-style: none; }
+
+/* ── FOCUS / ACCESSIBILITY ──────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--green2);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ── LAYOUT ─────────────────────────────────────── */
+#root { display: flex; min-height: 100vh; }
+
+.app-shell {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* Desktop sidebar nav */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  z-index: 100;
+  padding: 24px 0 16px;
+}
+
+.sidebar-logo {
+  padding: 0 20px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.sidebar-logo h1 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  color: var(--text);
+}
+.sidebar-logo span {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.nav-list { display: flex; flex-direction: column; gap: 4px; padding: 0 12px; flex: 1; }
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text2);
+  transition: background 0.15s, color 0.15s;
+  width: 100%;
+  text-align: left;
+}
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+.nav-btn.active {
+  background: var(--green-dim);
+  color: var(--green2);
+  font-weight: 600;
+  border: 1px solid var(--green-glow);
+}
+.nav-icon { width: 22px; text-align: center; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+
+.sidebar-footer {
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+.sidebar-date {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--mono);
+}
+
+/* Main content */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  padding: 32px;
+  max-width: calc(100vw - var(--sidebar-w));
+}
+
+/* ── PAGE HEADER ─────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 16px;
+}
+.page-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  color: var(--text);
+}
+.page-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ── CARDS ──────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.card-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  font-family: var(--mono);
+}
+.card-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.card-green { border-color: var(--green3); background: linear-gradient(135deg, var(--surface) 0%, rgba(196,129,138,0.08) 100%); }
+
+/* ── GRID ────────────────────────────────────────── */
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+/* ── PROGRESS BAR ───────────────────────────────── */
+.prog-wrap { display: flex; flex-direction: column; gap: 6px; }
+.prog-label { display: flex; justify-content: space-between; font-size: 13px; color: var(--text2); }
+.prog-track {
+  height: 6px;
+  background: var(--surface3);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.prog-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+.prog-fill.amber { background: var(--amber); }
+.prog-fill.red   { background: var(--red);   }
+
+/* ── BADGES ─────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.badge-green { background: var(--green-dim); color: var(--green2); border: 1px solid var(--green3); }
+.badge-amber { background: rgba(200,137,26,0.12); color: var(--amber); border: 1px solid rgba(200,137,26,0.3); }
+.badge-red   { background: rgba(192,57,43,0.12);  color: #E74C3C;     border: 1px solid rgba(192,57,43,0.3); }
+.badge-gray  { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+
+/* ── BUTTONS ────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 18px; border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600;
+  transition: background 0.15s, transform 0.1s;
+  cursor: pointer;
+  color: var(--text);
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--green); color: #fff; }
+.btn-primary:hover { background: var(--green2); }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border2); }
+.btn-secondary:hover { background: var(--surface3); }
+.btn-ghost { background: transparent; color: var(--text2); }
+.btn-ghost:hover { color: var(--text); background: var(--surface2); }
+.btn-danger { background: rgba(192,57,43,0.15); color: #E74C3C; border: 1px solid rgba(192,57,43,0.3); }
+.btn-danger:hover { background: rgba(192,57,43,0.25); }
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+.btn-lg { padding: 13px 24px; font-size: 15px; }
+.btn-full { width: 100%; }
+
+/* ── FORMS ──────────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.5px; }
+.form-input {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.form-input:focus { outline: none; border-color: var(--green); }
+.form-input::placeholder { color: var(--muted); }
+select.form-input { cursor: pointer; }
+select.form-input option { background: var(--surface2); }
+
+/* ── DIVIDER ─────────────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ── SECTION HEADER ─────────────────────────────── */
+.sec-hdr {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 20px;
+}
+.sec-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); white-space: nowrap; }
+.sec-line { flex: 1; height: 1px; background: var(--border); }
+
+/* ── STAT ROW ────────────────────────────────────── */
+.stat-row {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-label { font-size: 14px; color: var(--text2); }
+.stat-val { font-size: 14px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+
+/* ── GOLD SHIMMER ───────────────────────────────── */
+@keyframes goldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.gold-header {
+  background: linear-gradient(90deg,
+    #B8860B 0%, #DAA520 20%, #FFD700 35%, #FFF8DC 50%, #FFD700 65%, #DAA520 80%, #B8860B 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: goldShimmer 3.5s linear infinite;
+  display: inline-block;
+}
+
+/* ── HOME HERO ──────────────────────────────────── */
+.home-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  margin-bottom: 28px;
+  background: linear-gradient(135deg, #FADADD 0%, #F5B8C0 40%, #FAEBD7 100%);
+  border: 1px solid #EAABB5;
+  box-shadow: 0 8px 32px rgba(196,129,138,0.18);
+}
+.home-hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -40px;
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(218,165,32,0.15) 0%, transparent 65%);
+  pointer-events: none;
+}
+.home-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -40px; left: 5%;
+  width: 240px; height: 240px;
+  background: radial-gradient(circle, rgba(255,192,203,0.35) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.hero-greeting {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  color: #5C1A2A;
+  line-height: 1.1;
+}
+.hero-date { font-size: 13px; color: #8B4A5A; margin-top: 4px; font-weight: 500; }
+.streak-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(218,165,32,0.25), rgba(255,215,0,0.12));
+  border: 1px solid rgba(218,165,32,0.5);
+  border-radius: 999px;
+  padding: 8px 18px 8px 10px;
+  margin-top: 16px;
+  box-shadow: 0 0 20px rgba(218,165,32,0.15);
+}
+.streak-num-pill {
+  font-size: 28px;
+  font-weight: 900;
+  color: #B8860B;
+  font-family: var(--mono);
+  line-height: 1;
+  min-width: 28px;
+  text-align: center;
+}
+.streak-label { font-size: 12px; font-weight: 700; color: #5C1A2A; }
+.streak-sub   { font-size: 11px; color: #8B4A5A; margin-top: 1px; }
+.hero-actions {
+  margin-top: 22px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.today-split-chip {
+  background: rgba(255,255,255,0.55);
+  border: 1px solid rgba(218,165,32,0.35);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  min-width: 210px;
+  flex-shrink: 0;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 12px rgba(196,129,138,0.12);
+}
+.split-day-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #B8860B;
+  margin-bottom: 6px;
+}
+.split-name {
+  font-size: 17px;
+  font-weight: 800;
+  color: #5C1A2A;
+  letter-spacing: -0.3px;
+}
+.split-focus { font-size: 12px; color: #8B4A5A; margin-top: 3px; font-weight: 500; }
+
+/* Stat cards with accent bar */
+.stat-card-accent {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.15s;
+}
+.stat-card-accent:hover { border-color: var(--border2); border-left-color: var(--green2); }
+
+/* Program card on home */
+.program-card {
+  background: linear-gradient(135deg, #FFF5F7 0%, #FFF0E8 100%);
+  border: 1px solid #EAABB5;
+  border-left: 4px solid #DAA520;
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(196,129,138,0.10);
+}
+.program-exercises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 14px;
+}
+.program-ex-tag {
+  padding: 5px 11px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+/* Recovery grid items */
+.recovery-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text2);
+  transition: border-color 0.15s;
+}
+.recovery-item.fresh    { border: 1px solid rgba(58,107,53,0.35); }
+.recovery-item.moderate { border: 1px solid rgba(200,137,26,0.25); }
+.recovery-item.sore     { border: 1px solid rgba(192,57,43,0.35); }
+.recovery-item.none     { border: 1px solid var(--border); }
+
+/* ── WORKOUT ─────────────────────────────────────── */
+.exercise-lib {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+.ex-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  gap: 8px;
+  color: var(--text2);
+}
+.ex-item:hover { border-color: var(--green3); background: var(--green-dim); }
+.ex-item.selected { border-color: var(--green); background: var(--green-dim); color: var(--green2); font-weight: 600; }
+
+.session-builder {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.session-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface2);
+}
+
+.set-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 1fr 1fr 40px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.set-row:last-child { border-bottom: none; }
+.set-num {
+  font-size: 12px;
+  font-family: var(--mono);
+  color: var(--muted);
+  text-align: center;
+}
+
+.muscle-tag {
+  display: inline-flex;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: var(--surface3);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+/* ── NUTRITION ──────────────────────────────────── */
+.macro-ring-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+}
+.macro-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.macro-cal { font-size: 22px; font-weight: 800; font-family: var(--mono); color: var(--text); }
+.macro-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+
+.macro-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.macro-leg-row { display: flex; align-items: center; gap: 10px; }
+.macro-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.macro-leg-label { font-size: 13px; color: var(--text2); flex: 1; }
+.macro-leg-val { font-size: 13px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+
+.meal-section { margin-bottom: 24px; }
+.meal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border: 1px solid var(--border);
+  border-bottom: none;
+}
+.meal-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text2); }
+.meal-cals  { font-size: 12px; font-family: var(--mono); color: var(--green2); }
+
+.meal-body {
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  overflow: hidden;
+}
+.meal-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  gap: 12px;
+}
+.meal-item:last-child { border-bottom: none; }
+.meal-item-name { color: var(--text); flex: 1; }
+.meal-item-macros { display: flex; gap: 12px; }
+.meal-macro { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+
+.water-tracker {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.water-cup {
+  width: 42px; height: 52px;
+  border: 2px solid var(--border2);
+  border-radius: 4px 4px 8px 8px;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.15s;
+  background: var(--surface2);
+}
+.water-cup:hover { border-color: var(--green); }
+.water-cup.filled { border-color: var(--green); }
+.water-fill {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, var(--green), var(--green2));
+  transition: height 0.3s ease;
+}
+
+/* ── MUSCLE MAP ─────────────────────────────────── */
+.body-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.body-toggle button {
+  padding: 8px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.body-toggle button.active {
+  background: var(--green-dim);
+  color: var(--green2);
+  border-color: var(--green3);
+}
+
+.body-diagram-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.muscle-legend {
+  display: flex; gap: 16px; margin-top: 16px; flex-wrap: wrap;
+}
+.muscle-leg-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); }
+.muscle-leg-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+.muscle-detail-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+/* ── INTENSITY METER ─────────────────────────────── */
+.intensity-meter {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  margin-bottom: 8px;
+}
+.intensity-info { flex: 1; }
+.intensity-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); }
+.intensity-name { font-size: 15px; font-weight: 800; color: var(--text); margin-top: 2px; }
+.intensity-bars { display: flex; gap: 3px; }
+.intensity-bar {
+  width: 10px; height: 28px;
+  border-radius: 3px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  transition: background 0.2s, border-color 0.2s;
+}
+.intensity-bar.filled { border-color: transparent; }
+
+/* ── EXERCISE PICKER ─────────────────────────────── */
+.ex-picker-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+  max-height: 160px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.ex-pill {
+  padding: 5px 11px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.ex-pill:hover { background: var(--surface3); color: var(--text); }
+.ex-pill.active {
+  background: var(--green-dim);
+  color: var(--green2);
+  border-color: var(--green3);
+  font-weight: 600;
+}
+
+/* ── BODY DIAGRAM IMPROVED ───────────────────────── */
+.body-diagram-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 16px 8px;
+}
+.muscle-group-path {
+  cursor: pointer;
+  transition: opacity 0.15s, filter 0.15s;
+}
+.muscle-group-path:hover { opacity: 0.85; filter: brightness(1.2); }
+.muscle-group-path.selected { filter: brightness(1.35) drop-shadow(0 0 4px currentColor); }
+
+/* ── PROGRESS ────────────────────────────────────── */
+.chart-wrap {
+  position: relative;
+  height: 220px;
+  width: 100%;
+}
+
+.pr-table { width: 100%; border-collapse: collapse; }
+.pr-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.pr-table td {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.pr-table tr:last-child td { border-bottom: none; }
+.pr-table td:nth-child(2) { font-family: var(--mono); color: var(--text); font-weight: 700; }
+.pr-table td:nth-child(3) { font-family: var(--mono); color: var(--green2); font-size: 12px; }
+
+/* ── MODAL ──────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(26,10,15,0.60);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999;
+  padding: 20px;
+}
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 24px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 64px rgba(26,10,15,0.18);
+}
+.modal-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text);
+}
+.modal-footer {
+  display: flex; gap: 10px; margin-top: 24px;
+  justify-content: flex-end;
+}
+
+/* ── SCROLLBAR ──────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ── CALENDAR ───────────────────────────────────── */
+.cal-nav-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text);
+  border-radius: 8px; width: 32px; height: 32px; font-size: 16px; line-height: 1;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.cal-nav-btn:hover { background: var(--surface3); }
+.cal-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px;
+}
+.cal-day-label {
+  text-align: center; font-size: 10.5px; color: var(--muted);
+  padding: 4px 0 8px; font-weight: 600; letter-spacing: 0.04em;
+}
+.cal-day {
+  border-radius: 8px; padding: 5px 4px 4px;
+  cursor: pointer; border: 1px solid transparent;
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  min-height: 50px; transition: background 0.12s, border-color 0.12s;
+}
+.cal-day:hover:not(.cal-empty) { background: var(--surface2); border-color: var(--border); }
+.cal-day.cal-today { border-color: var(--green3); background: var(--green-dim); }
+.cal-day.cal-today .cal-day-num { color: var(--green2); }
+.cal-day.cal-selected { background: var(--surface3); border-color: var(--border2); }
+.cal-day.cal-empty { cursor: default; min-height: 50px; }
+.cal-day-num { font-size: 12px; font-weight: 600; color: var(--text2); line-height: 1; }
+.cal-dots { display: flex; gap: 2px; flex-wrap: wrap; justify-content: center; margin-top: 1px; }
+.cal-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+.cal-day-detail {
+  margin-top: 16px; padding: 16px; background: var(--surface2);
+  border-radius: 12px; border: 1px solid var(--border);
+  animation: fadeIn 0.15s ease;
+}
+.cal-section-label {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; margin-bottom: 6px;
+}
+.cal-pill {
+  display: inline-block; padding: 2px 8px; border-radius: 99px;
+  font-size: 11px; font-weight: 600; margin: 2px;
+}
+
+/* ── DAILY RESET BADGE ──────────────────────────── */
+.today-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700;
+  background: var(--green-dim); color: var(--green2); border: 1px solid var(--green3);
+}
+.today-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: var(--green2);
+  animation: pulse 2s ease infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+}
+
+/* ── RESPONSIVE (PHONE) ─────────────────────────── */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main-content {
+    margin-left: 0;
+    max-width: 100%;
+    /* Dynamic Island top + content bottom clears the home indicator + nav bar */
+    padding: calc(env(safe-area-inset-top) + 16px)
+             max(16px, env(safe-area-inset-right))
+             calc(env(safe-area-inset-bottom) + 80px)
+             max(16px, env(safe-area-inset-left));
+  }
+  .grid-4, .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .grid-2 { grid-template-columns: 1fr; }
+
+  /* Bottom nav — sits above home indicator */
+  .mobile-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    /* 64px nav + home indicator safe area */
+    height: calc(64px + env(safe-area-inset-bottom));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    z-index: 100;
+    /* horizontal safe area for landscape */
+    padding: 0 calc(8px + env(safe-area-inset-right)) env(safe-area-inset-bottom) calc(8px + env(safe-area-inset-left));
+    align-items: flex-start;
+    /* blur backdrop like native iOS tab bar */
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(20px) saturate(180%);
+    background: rgba(17,17,17,0.88);
+  }
+  .mob-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: color 0.15s;
+    padding: 10px 4px 6px;
+    border: none;
+    background: none;
+    /* tappable area at least 44pt per Apple HIG */
+    min-height: 44px;
+  }
+  .mob-btn.active { color: var(--green2); }
+  .mob-icon { width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
+
+  /* Larger tap targets on mobile */
+  .btn { min-height: 44px; }
+  .form-input { min-height: 44px; font-size: 16px; /* prevents iOS zoom on focus */ }
+  select.form-input { font-size: 16px; }
+}
+@media (min-width: 769px) {
+  .mobile-nav { display: none; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useReducer, useEffect, useRef, useCallback } = React;
+
+/* ── CONSTANTS ─────────────────────────────────────── */
+const TODAY = new Date().toISOString().slice(0,10);
+const DAYS  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtDate = (d) => { const dt = new Date(d+'T12:00:00'); return `${MONTHS[dt.getMonth()]} ${dt.getDate()}`; };
+
+const MUSCLES = [
+  { id:'chest',    label:'Chest',       side:'front' },
+  { id:'shoulders',label:'Shoulders',   side:'both'  },
+  { id:'biceps',   label:'Biceps',      side:'front' },
+  { id:'triceps',  label:'Triceps',     side:'back'  },
+  { id:'forearms', label:'Forearms',    side:'both'  },
+  { id:'core',     label:'Core / Abs',  side:'front' },
+  { id:'back',     label:'Back / Lats', side:'back'  },
+  { id:'traps',    label:'Traps',       side:'back'  },
+  { id:'glutes',   label:'Glutes',      side:'back'  },
+  { id:'quads',    label:'Quads',       side:'front' },
+  { id:'hamstrings',label:'Hamstrings', side:'back'  },
+  { id:'calves',   label:'Calves',      side:'both'  },
+];
+
+const EXERCISE_PRESETS = {
+  chest:    ['Bench Press','Incline Bench Press','Flat Barbell Bench','Dumbbell Fly','Push-Ups','Plyo Push-Ups','Cable Fly','Dips','Close-Grip Bench','Chest-Supported Row'],
+  back:     ['Deadlift','Trap Bar Deadlift','Pull-Ups','Weighted Pull-Ups','Barbell Row','Chest-Supported Rows','Lat Pulldown','Seated Cable Row','Face Pull','T-Bar Row','One-Arm Dumbbell Row'],
+  shoulders:['Overhead Press','Standing Overhead Press','Lateral Raises','Front Raise','Rear Delt Fly','Arnold Press','Shrugs','Face Pulls','External Rotations'],
+  biceps:   ['Barbell Curl','Dumbbell Curl','Hammer Curl','Incline Curl','Cable Curl','Preacher Curl'],
+  triceps:  ['Tricep Dip','Dips','Skull Crusher','Tricep Pushdown','Close-Grip Bench','Overhead Extension'],
+  legs:     ['Back Squat','Front Squat','Sumo Squat','Goblet Squat','Trap Bar Deadlift','Romanian Deadlift','Leg Press','Leg Curl','Nordic Curl','Lying Leg Curl','Seated Leg Curl','Leg Extension','Walking Lunges','Reverse Lunges','Curtsy Lunge','Bulgarian Split Squat','Barbell Hip Thrust','Step-Ups','Hack Squat','Standing Calf Raises','Wall Sit','Sissy Squat','Leg Press Calf Raise','Stiff-Leg Deadlift','Single-Leg Press'],
+  glutes:   ['Barbell Hip Thrust','Smith Machine Hip Thrust','Glute Bridge','Single-Leg Hip Thrust','Cable Kickback','Donkey Kickback','Banded Glute Bridge','Sumo Deadlift','Kneeling Squat','Frog Pump','Hip Abduction Machine','Side-Lying Clamshell','Banded Walk','RDL to Hip Thrust Superset','Step-Up with Hip Extension'],
+  core:     ['Plank','Hanging Leg Raises','Ab Wheel','Pallof Press','Side Plank','Back Extensions','Cable Crunch','Hanging Knee Raise','Russian Twist','Leg Raise'],
+  calves:   ['Standing Calf Raises','Seated Calf Raise','Donkey Calf Raise','Jump Rope','Box Jumps'],
+  traps:    ['Barbell Shrugs','Dumbbell Shrugs','Trap Bar Shrugs','Farmer\'s Walks','Face Pulls','Rack Pull','Upright Row','Snatch Grip Deadlift'],
+  lowerback:['Romanian Deadlift','Trap Bar Deadlift','Deadlift','Back Extensions','Good Mornings','Bird Dog','Reverse Hyper','Superman'],
+  hamstrings:['Romanian Deadlift','Nordic Curl','Lying Leg Curl','Seated Leg Curl','Glute-Ham Raise','Sumo Deadlift','Single-Leg RDL','Box Jumps'],
+  forearms: ['Farmer\'s Walks','Wrist Curl','Reverse Wrist Curl','Hammer Curl','Dead Hangs','Rope Climb','Plate Pinches'],
+  quads:    ['Back Squat','Front Squat','Leg Press','Walking Lunges','Bulgarian Split Squat','Step-Ups','Hack Squat','Leg Extension','Box Jumps'],
+  cardio:   ['Sprint Intervals','Acceleration Sprints','Flying Sprints','Sled Push','Prowler Push','Running','Cycling','Jump Rope','Rowing','Elliptical','Stair Climber','Battle Ropes','Agility Ladder','Farmer\'s Walk'],
+  explosive:['Box Jumps','Broad Jumps','Single-Leg Hops','Lateral Bounds','Med Ball Chest Pass','Plyo Push-Ups','Acceleration Sprints'],
+};
+
+/* ── ESTHER'S PROGRAMS ──────────────────────────── */
+const CAM_PROGRAMS = {
+  weekSplit: {
+    0: {
+      name: 'Active Recovery',
+      focus: 'Stretch + Walk + Breathe',
+      type: 'Recovery',
+      exercises: ['30-min Walk', 'Hip Flexor Stretch', 'Pigeon Pose', 'Foam Roll Glutes', 'Cat-Cow', 'Child\'s Pose', 'Deep Breathing'],
+    },
+    1: {
+      name: 'Glute & Hamstring Day',
+      focus: 'Posterior Chain — Shape + Strength',
+      type: 'Strength',
+      exercises: ['Barbell Hip Thrust', 'Romanian Deadlift', 'Single-Leg Hip Thrust', 'Lying Leg Curl', 'Cable Kickback', 'Banded Glute Bridge', 'Donkey Kickback'],
+    },
+    2: {
+      name: 'Upper Body Sculpt',
+      focus: 'Toned Arms + Strong Back',
+      type: 'Tone',
+      exercises: ['Lat Pulldown', 'Seated Cable Row', 'Dumbbell Curl', 'Tricep Pushdown', 'Lateral Raises', 'Face Pulls', 'Rear Delt Fly'],
+    },
+    3: {
+      name: 'Quads & Booty Volume',
+      focus: 'Leg Hypertrophy + Glute Pump',
+      type: 'Hypertrophy',
+      exercises: ['Back Squat', 'Bulgarian Split Squat', 'Leg Press', 'Curtsy Lunge', 'Hip Abduction Machine', 'Step-Ups', 'Leg Extension'],
+    },
+    4: {
+      name: 'Core & Cardio',
+      focus: 'Flat Tummy + Endurance',
+      type: 'Athletic',
+      exercises: ['Stair Climber (20 min)', 'Hanging Leg Raises', 'Russian Twist', 'Cable Crunch', 'Side Plank', 'Ab Wheel', 'Jump Rope'],
+    },
+    5: {
+      name: 'Full Glute Focus',
+      focus: 'Maximum Glute Activation',
+      type: 'Hypertrophy',
+      exercises: ['Smith Machine Hip Thrust', 'Sumo Deadlift', 'Frog Pump', 'Kneeling Squat', 'Banded Walk', 'Side-Lying Clamshell', 'Glute Bridge Iso Hold'],
+    },
+    6: null,
+  },
+  principles: [
+    'Hip thrusts — full squeeze at the top every rep',
+    'Mind-muscle connection over heavy weight',
+    'Progressive overload: add reps or weight each week',
+    'Protein within 30 min after training',
+    'Consistency beats perfection every time',
+    'Rest days are where the glutes actually grow',
+  ],
+  goal: 'Strong, Sculpted, Confident — Glutes, Legs & Core',
+};
+
+const MUSCLE_COLORS = { chest:'#fff', back:'#fff', shoulders:'#fff', biceps:'#fff', triceps:'#fff', forearms:'#fff', core:'#fff', traps:'#fff', lowerback:'#fff', glutes:'#fff', quads:'#fff', hamstrings:'#fff', calves:'#fff' };
+
+/* ── CAM'S 60 MEALS ─────────────────────────────── */
+const MEAL_PRESETS = {
+  breakfast: [
+    { name:'Turkey Bacon, Egg & Cheese Sandwich', cal:540, p:42, c:48, f:16 },
+    { name:'Steak & Egg Scramble', cal:680, p:58, c:8, f:44 },
+    { name:'Overnight Oats + Protein', cal:620, p:38, c:82, f:12 },
+    { name:'Pancake Stack + Turkey Sausage', cal:780, p:40, c:95, f:22 },
+    { name:'Egg Muffin Cups (x4)', cal:420, p:34, c:6, f:28 },
+    { name:'Breakfast Burrito', cal:720, p:48, c:58, f:28 },
+    { name:'Greek Yogurt Parfait Bowl', cal:520, p:40, c:62, f:10 },
+    { name:'Protein Waffles + Crispy Chicken', cal:810, p:58, c:72, f:25 },
+    { name:'Mass Gainer Smoothie Bowl', cal:900, p:55, c:108, f:22 },
+    { name:'Sausage Egg Sandwich (Homemade)', cal:640, p:44, c:42, f:30 },
+    { name:'Cottage Cheese Bowl + Fruit', cal:440, p:36, c:48, f:8 },
+    { name:'Bagel + Lox + Cream Cheese', cal:580, p:36, c:62, f:20 },
+    { name:'French Toast + Turkey Bacon', cal:750, p:34, c:88, f:28 },
+    { name:'Avocado Toast + Poached Eggs', cal:580, p:28, c:52, f:32 },
+    { name:'Smash Burger McGriddle Style', cal:820, p:52, c:65, f:35 },
+  ],
+  lunch: [
+    { name:'Chicken Rice Bowl', cal:780, p:58, c:82, f:18 },
+    { name:'Ground Turkey Taco Bowl', cal:820, p:56, c:74, f:28 },
+    { name:'Loaded Chicken Caesar Wrap', cal:680, p:50, c:55, f:24 },
+    { name:'Steak Quesadilla', cal:890, p:60, c:62, f:40 },
+    { name:'Tuna Melt on Sourdough', cal:620, p:48, c:50, f:22 },
+    { name:'Shrimp Fried Rice', cal:750, p:44, c:88, f:20 },
+    { name:'Turkey Club Sandwich', cal:700, p:52, c:55, f:24 },
+    { name:'Pasta + Ground Beef Bolognese', cal:880, p:58, c:95, f:24 },
+    { name:'Buffalo Chicken Mac & Cheese', cal:960, p:55, c:90, f:35 },
+    { name:'Salmon + Quinoa Bowl', cal:680, p:52, c:55, f:24 },
+    { name:'Chipotle Steak Burrito Bowl', cal:980, p:68, c:105, f:28 },
+    { name:'Chicken + Avocado Grain Bowl', cal:740, p:55, c:72, f:22 },
+    { name:'BBQ Chicken Pizza (2 slices)', cal:860, p:52, c:88, f:28 },
+    { name:'Double Smash Burger + Fries', cal:1050, p:62, c:88, f:44 },
+    { name:'Sushi Burrito', cal:720, p:46, c:85, f:18 },
+  ],
+  snacks: [
+    { name:'Protein Shake + Banana', cal:380, p:35, c:42, f:5 },
+    { name:'Beef Jerky + Cheese + Crackers', cal:360, p:28, c:22, f:16 },
+    { name:'Greek Yogurt + Granola + Honey', cal:380, p:24, c:48, f:8 },
+    { name:'Almonds + Chocolate Milk', cal:440, p:22, c:45, f:22 },
+    { name:'Cottage Cheese + Pineapple', cal:280, p:28, c:26, f:4 },
+    { name:'Rice Cakes + Peanut Butter', cal:320, p:14, c:40, f:12 },
+    { name:'Protein Bar (Quest or Built)', cal:200, p:21, c:24, f:6 },
+    { name:'Hard Boiled Eggs + Hot Sauce', cal:210, p:18, c:2, f:14 },
+    { name:'Bagel + Cream Cheese', cal:420, p:14, c:62, f:14 },
+    { name:'Trail Mix (Nuts + M&Ms)', cal:480, p:12, c:48, f:28 },
+    { name:"PB&J on Dave's Killer Bread", cal:420, p:18, c:55, f:16 },
+    { name:'Tuna + Crackers', cal:280, p:30, c:20, f:6 },
+    { name:'Edamame + Soy Sauce', cal:220, p:18, c:16, f:8 },
+    { name:'Avocado Toast + Salt', cal:300, p:6, c:28, f:18 },
+    { name:'Oreos + Whole Milk', cal:460, p:10, c:68, f:16 },
+  ],
+  dinner: [
+    { name:'Salmon + Sweet Potato + Broccoli', cal:780, p:58, c:55, f:28 },
+    { name:'Chicken Alfredo Pasta', cal:960, p:62, c:88, f:32 },
+    { name:'Steak (8oz Sirloin) + Mashed Potato', cal:920, p:65, c:55, f:40 },
+    { name:'Ground Turkey Stuffed Peppers', cal:680, p:52, c:55, f:22 },
+    { name:'Baked Chicken Thighs + Jasmine Rice', cal:780, p:60, c:68, f:24 },
+    { name:'Spaghetti + Meat Sauce', cal:920, p:58, c:100, f:24 },
+    { name:'Shrimp + Grits', cal:760, p:48, c:72, f:28 },
+    { name:'Turkey Meatballs + Pasta', cal:840, p:58, c:88, f:22 },
+    { name:'BBQ Chicken + Cornbread', cal:880, p:60, c:75, f:28 },
+    { name:'Beef Stir Fry + Noodles', cal:820, p:55, c:80, f:26 },
+    { name:'Salmon Teriyaki + Rice', cal:780, p:54, c:72, f:22 },
+    { name:'Chicken Parmesan', cal:940, p:65, c:75, f:32 },
+    { name:'Lamb Chops + Roasted Potatoes', cal:960, p:60, c:50, f:48 },
+    { name:'Pulled Chicken Rice Bowl', cal:780, p:58, c:78, f:20 },
+    { name:'Oxtail + White Rice (Jamaican Style)', cal:1020, p:65, c:80, f:40 },
+  ],
+};
+
+const STORAGE_KEY = 'workout-focus-v1';
+
+/* ── INITIAL STATE ─────────────────────────────────── */
+const INITIAL_STATE = {
+  tab: 'home',
+  sessions: [],
+  activeSession: null,
+  pendingSession: null,
+  mealLog:   {},
+  waterLog:  {},
+  nutritionGoals: { calories: 3200, protein: 200, carbs: 400, fat: 80, water: 8 },
+  customFoods: [],
+  muscleLog: {},
+  weightLog:   [],
+  measurements:[],
+  strengthLog: {},
+  goals: { targetWeight: '180', targetBodyFat: '', targetBench: '', targetSquat: '', targetDeadlift: '' },
+};
+
+/* ── REDUCER ───────────────────────────────────────── */
+function reducer(state, action) {
+  switch(action.type) {
+    case 'SET_TAB': return { ...state, tab: action.tab };
+    case 'SET_PENDING_SESSION': return { ...state, pendingSession: action.session };
+    case 'CLEAR_PENDING_SESSION': return { ...state, pendingSession: null };
+    case 'SAVE_CUSTOM_FOOD': return { ...state, customFoods: [...(state.customFoods||[]), action.food] };
+    case 'DELETE_CUSTOM_FOOD': return { ...state, customFoods: (state.customFoods||[]).filter((_,i)=>i!==action.idx) };
+
+    case 'START_SESSION': {
+      const session = {
+        id: Date.now(),
+        date: TODAY,
+        name: action.name,
+        exercises: action.exercises.map(name => ({
+          name,
+          muscle: action.muscleGroup,
+          sets: [{ reps:'', weight:'', done: false }]
+        })),
+        startTime: Date.now(),
+        complete: false,
+      };
+      return { ...state, activeSession: session };
+    }
+    case 'ADD_SET': {
+      if (!state.activeSession) return state;
+      const exs = state.activeSession.exercises.map((ex, i) =>
+        i === action.exIdx
+          ? { ...ex, sets: [...ex.sets, { reps:'', weight:'', done: false }] }
+          : ex
+      );
+      return { ...state, activeSession: { ...state.activeSession, exercises: exs } };
+    }
+    case 'UPDATE_SET': {
+      if (!state.activeSession) return state;
+      const exs = state.activeSession.exercises.map((ex, i) =>
+        i === action.exIdx
+          ? { ...ex, sets: ex.sets.map((s, j) => j === action.setIdx ? { ...s, [action.field]: action.value } : s) }
+          : ex
+      );
+      return { ...state, activeSession: { ...state.activeSession, exercises: exs } };
+    }
+    case 'COMPLETE_SESSION': {
+      if (!state.activeSession) return state;
+      const session = { ...state.activeSession, complete: true, endTime: Date.now() };
+      const muscleLog = { ...state.muscleLog };
+      session.exercises.forEach(ex => {
+        if (ex.muscle) {
+          const prev = muscleLog[ex.muscle];
+          const prevExs = (prev && typeof prev === 'object') ? prev.exercises : [];
+          const exs = ex.name ? [...new Set([...prevExs, ex.name])] : prevExs;
+          muscleLog[ex.muscle] = { date: TODAY, exercises: exs, intensity: Math.min(5, exs.length || 1) };
+        }
+      });
+      const strengthLog = { ...state.strengthLog };
+      session.exercises.forEach(ex => {
+        const prs = ex.sets.filter(s => s.weight && s.reps).map(s => ({ date: TODAY, weight: parseFloat(s.weight), reps: parseInt(s.reps) }));
+        if (prs.length) strengthLog[ex.name] = [...(strengthLog[ex.name]||[]), ...prs];
+      });
+      return { ...state, sessions: [session, ...state.sessions], activeSession: null, muscleLog, strengthLog };
+    }
+    case 'DISCARD_SESSION': return { ...state, activeSession: null };
+
+    case 'LOG_MEAL': {
+      const dayLog = state.mealLog[TODAY] || { breakfast:[], lunch:[], dinner:[], snacks:[] };
+      const updated = { ...dayLog, [action.meal]: [...dayLog[action.meal], action.item] };
+      return { ...state, mealLog: { ...state.mealLog, [TODAY]: updated } };
+    }
+    case 'REMOVE_MEAL': {
+      const dayLog = state.mealLog[TODAY];
+      if (!dayLog) return state;
+      const updated = { ...dayLog, [action.meal]: dayLog[action.meal].filter((_,i) => i !== action.idx) };
+      return { ...state, mealLog: { ...state.mealLog, [TODAY]: updated } };
+    }
+    case 'SET_WATER': {
+      return { ...state, waterLog: { ...state.waterLog, [TODAY]: action.cups } };
+    }
+    case 'SET_NUTRITION_GOALS': return { ...state, nutritionGoals: action.goals };
+
+    case 'TRAIN_MUSCLE': return { ...state, muscleLog: { ...state.muscleLog, [action.id]: { date: TODAY, exercises: action.exercises || [], intensity: action.intensity || 1 } } };
+    case 'UNTRAIN_MUSCLE': { const { [action.id]: _removed, ...restLog } = state.muscleLog; return { ...state, muscleLog: restLog }; }
+
+    case 'LOG_WEIGHT': return { ...state, weightLog: [...state.weightLog, { date: TODAY, weight: action.weight }] };
+    case 'LOG_MEASUREMENT': return { ...state, measurements: [...state.measurements, { date: TODAY, ...action.data }] };
+    case 'SET_GOALS': return { ...state, goals: { ...state.goals, ...action.goals } };
+    case 'IMPORT_DATA': {
+      const s = action.payload;
+      return {
+        ...state,
+        sessions:       Array.isArray(s.sessions)       ? s.sessions       : state.sessions,
+        muscleLog:      s.muscleLog  && typeof s.muscleLog  === 'object' ? s.muscleLog  : state.muscleLog,
+        strengthLog:    s.strengthLog && typeof s.strengthLog=== 'object' ? s.strengthLog: state.strengthLog,
+        mealLog:        s.mealLog    && typeof s.mealLog    === 'object' ? s.mealLog    : state.mealLog,
+        waterLog:       s.waterLog   && typeof s.waterLog   === 'object' ? s.waterLog   : state.waterLog,
+        weightLog:      Array.isArray(s.weightLog)      ? s.weightLog      : state.weightLog,
+        measurements:   Array.isArray(s.measurements)   ? s.measurements   : state.measurements,
+        nutritionGoals: s.nutritionGoals ? { ...state.nutritionGoals, ...s.nutritionGoals } : state.nutritionGoals,
+        goals:          s.goals          ? { ...state.goals,          ...s.goals          } : state.goals,
+      };
+    }
+
+    default: return state;
+  }
+}
+
+/* ── HELPERS ───────────────────────────────────────── */
+// muscleLog entries can be either 'YYYY-MM-DD' (legacy) or { date, exercises[], intensity }
+const getMuscleDate      = (e) => !e ? null : (typeof e === 'string' ? e : e.date);
+const getMuscleExercises = (e) => (e && typeof e === 'object' && e.exercises) ? e.exercises : [];
+const getMuscleIntensity = (e) => (e && typeof e === 'object' && e.intensity) ? e.intensity : (e ? 1 : 0);
+
+const getRecovery = (entry) => {
+  const lastTrained = getMuscleDate(entry);
+  if (!lastTrained) return 'none';
+  const days = Math.floor((new Date(TODAY) - new Date(lastTrained)) / 86400000);
+  if (days === 0) return 'sore';
+  if (days === 1) return 'moderate';
+  return 'fresh';
+};
+const recoveryLabel = { sore:'Sore — Rest', moderate:'Recovering', fresh:'Ready', none:'Not Logged' };
+const recoveryBadge = { sore:'badge-red', moderate:'badge-amber', fresh:'badge-green', none:'badge-gray' };
+
+const INTENSITY_LEVELS = [
+  { level:0, label:'Not Trained',  color:'#555555' },
+  { level:1, label:'Warmed Up',    color:'#C4818A' },
+  { level:2, label:'Activated',    color:'#72A84E' },
+  { level:3, label:'Worked',       color:'#C8891A' },
+  { level:4, label:'Pumped',       color:'#E07520' },
+  { level:5, label:'Hammered',     color:'#E74C3C' },
+];
+const getIntensityLevel = (exCount) => {
+  if (!exCount || exCount === 0) return INTENSITY_LEVELS[0];
+  if (exCount >= 5) return INTENSITY_LEVELS[5];
+  return INTENSITY_LEVELS[exCount];
+};
+
+const sumMacros = (meals) => {
+  const all = Object.values(meals || {}).flat();
+  return all.reduce((acc, item) => ({
+    cal: acc.cal + (item.cal||0),
+    p:   acc.p   + (item.p  ||0),
+    c:   acc.c   + (item.c  ||0),
+    f:   acc.f   + (item.f  ||0),
+  }), { cal:0, p:0, c:0, f:0 });
+};
+
+/* ── SVG NAV ICONS ─────────────────────────────────── */
+const IconHome = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+    <polyline points="9 22 9 12 15 12 15 22"/>
+  </svg>
+);
+const IconWorkout = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 4v16M18 4v16"/>
+    <path d="M4 9h4M16 9h4M4 15h4M16 15h4"/>
+    <line x1="8" y1="12" x2="16" y2="12" strokeWidth="3"/>
+  </svg>
+);
+const IconNutrition = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+    <path d="M2 12h20"/>
+    <path d="M12 2a15.3 15.3 0 010 20"/>
+    <path d="M12 2a15.3 15.3 0 000 20"/>
+  </svg>
+);
+const IconMuscles = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+  </svg>
+);
+const IconProgress = () => (
+  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+  </svg>
+);
+
+/* ── COMPONENTS: UTILITY ───────────────────────────── */
+function ProgressBar({ val, max, color='', label='', sublabel='' }) {
+  const pct = Math.min(100, max > 0 ? Math.round((val/max)*100) : 0);
+  const cls = pct > 100 ? 'red' : pct > 85 ? 'amber' : '';
+  return (
+    <div className="prog-wrap">
+      {label && <div className="prog-label"><span>{label}</span><span style={{fontFamily:'var(--mono)',fontSize:12}}>{val}<span style={{color:'var(--muted)'}}>/{max}</span></span></div>}
+      <div className="prog-track">
+        <div className={`prog-fill ${color||cls}`} style={{width:`${pct}%`}}/>
+      </div>
+      {sublabel && <div style={{fontSize:11,color:'var(--muted)'}}>{sublabel}</div>}
+    </div>
+  );
+}
+
+function Modal({ title, onClose, children, footer }) {
+  useEffect(() => {
+    const esc = e => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', esc);
+    return () => document.removeEventListener('keydown', esc);
+  }, [onClose]);
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }} role="dialog" aria-modal="true" aria-label={title}>
+      <div className="modal">
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+          <div className="modal-title">{title}</div>
+          <button className="btn btn-ghost btn-sm" onClick={onClose} aria-label="Close" style={{color:'var(--muted)',fontSize:16}}>x</button>
+        </div>
+        {children}
+        {footer && <div className="modal-footer">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+/* ── COMPONENT: HOME ────────────────────────────────── */
+function Home({ state, dispatch }) {
+  const todayMeals = state.mealLog[TODAY] || {};
+  const macros = sumMacros(todayMeals);
+  const water  = state.waterLog[TODAY] || 0;
+  const { nutritionGoals: ng } = state;
+  const todaySessions = state.sessions.filter(s => s.date === TODAY);
+
+  const streak = (() => {
+    let count = 0;
+    const sorted = [...new Set(state.sessions.map(s=>s.date))].sort().reverse();
+    let check = new Date(TODAY);
+    for (const d of sorted) {
+      const diff = Math.floor((check - new Date(d+'T12:00:00')) / 86400000);
+      if (diff === 0 || diff === 1) { count++; check = new Date(d+'T12:00:00'); }
+      else break;
+    }
+    return count;
+  })();
+
+  const hour = new Date().getHours();
+  const timeGreeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening';
+  const dayOfWeek = new Date().getDay();
+  const todayProgram = CAM_PROGRAMS.weekSplit[dayOfWeek];
+
+  const freshMuscles = MUSCLES.filter(m => {
+    const r = getRecovery(state.muscleLog[m.id]);
+    return r === 'fresh' || r === 'none';
+  });
+  const soreMuscles = MUSCLES.filter(m => getRecovery(state.muscleLog[m.id]) === 'sore');
+
+  const calPct  = Math.min(100, ng.calories > 0 ? Math.round((macros.cal / ng.calories) * 100) : 0);
+  const protPct = Math.min(100, ng.protein  > 0 ? Math.round((macros.p   / ng.protein)  * 100) : 0);
+  const waterPct= Math.min(100, ng.water    > 0 ? Math.round((water       / ng.water)    * 100) : 0);
+
+  return (
+    <div>
+
+      {/* ── HERO BANNER ── */}
+      <div className="home-hero">
+        <div className="hero-inner">
+          <div>
+            <div className="hero-greeting">{timeGreeting}, <span className="gold-header">Judith</span></div>
+            <div className="hero-date">
+              {new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}
+            </div>
+            {streak > 0 && (
+              <div className="streak-pill">
+                <div className="streak-num-pill">{streak}</div>
+                <div>
+                  <div className="streak-label">Day Streak</div>
+                  <div className="streak-sub">Keep it locked in</div>
+                </div>
+              </div>
+            )}
+          </div>
+          {todayProgram ? (
+            <div className="today-split-chip">
+              <div className="split-day-label">Today's Split</div>
+              <div className="split-name">{todayProgram.name}</div>
+              <div className="split-focus">{todayProgram.focus}</div>
+              <span className="badge badge-green" style={{marginTop:10,fontSize:10}}>{todayProgram.type}</span>
+            </div>
+          ) : (
+            <div className="today-split-chip">
+              <div className="split-day-label">Today</div>
+              <div className="split-name">Rest Day</div>
+              <div className="split-focus">Recovery is part of the program</div>
+            </div>
+          )}
+        </div>
+        <div className="hero-actions">
+          <button className="btn btn-primary" onClick={() => {
+            if (todayProgram) dispatch({ type:'SET_PENDING_SESSION', session:{ name: todayProgram.name, exercises: todayProgram.exercises, muscleGroup: todayProgram.type || 'mixed' }});
+            dispatch({type:'SET_TAB',tab:'workout'});
+          }}>
+            Start Session
+          </button>
+          <button className="btn btn-secondary" onClick={() => dispatch({type:'SET_TAB',tab:'nutrition'})}>
+            Log Meal
+          </button>
+          <button className="btn btn-secondary" onClick={() => dispatch({type:'SET_TAB',tab:'muscles'})}>
+            Recovery Map
+          </button>
+        </div>
+      </div>
+
+      {/* ── STATS ROW ── */}
+      <div className="grid-4" style={{marginBottom:24}}>
+        <div className="stat-card-accent">
+          <div className="card-title">Calories Today</div>
+          <div className="card-value">{macros.cal}</div>
+          <div className="card-sub">/ {ng.calories} goal — {calPct}%</div>
+          <div style={{marginTop:12}}><ProgressBar val={macros.cal} max={ng.calories}/></div>
+        </div>
+        <div className="stat-card-accent">
+          <div className="card-title">Protein</div>
+          <div className="card-value">{macros.p}<span style={{fontSize:16,fontWeight:500,color:'var(--muted)'}}>g</span></div>
+          <div className="card-sub">/ {ng.protein}g goal — {protPct}%</div>
+          <div style={{marginTop:12}}><ProgressBar val={macros.p} max={ng.protein} color="green"/></div>
+        </div>
+        <div className="stat-card-accent">
+          <div className="card-title">Hydration</div>
+          <div className="card-value">{water}<span style={{fontSize:16,fontWeight:500,color:'var(--muted)'}}>/{ng.water}</span></div>
+          <div className="card-sub">cups — {waterPct}% of goal</div>
+          <div style={{marginTop:12}}><ProgressBar val={water} max={ng.water} color="green"/></div>
+        </div>
+        <div className="card">
+          <div className="card-title">Sessions Today</div>
+          <div className="card-value">{todaySessions.length}</div>
+          <div className="card-sub">Total logged: {state.sessions.length}</div>
+          {soreMuscles.length > 0 && (
+            <div style={{marginTop:10,fontSize:11,color:'#E74C3C',fontWeight:600}}>
+              {soreMuscles.length} muscle{soreMuscles.length > 1 ? 's' : ''} sore
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── TODAY'S PROGRAM DETAIL ── */}
+      {todayProgram && (
+        <div className="program-card">
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+            <div>
+              <div className="card-title" style={{marginBottom:4}}>Program — {DAYS[dayOfWeek]}</div>
+              <div style={{fontSize:20,fontWeight:800,color:'var(--green2)',letterSpacing:'-0.3px'}}>{todayProgram.name}</div>
+              <div style={{fontSize:13,color:'var(--muted)',marginTop:3}}>{todayProgram.focus}</div>
+            </div>
+            <button className="btn btn-primary" onClick={() => {
+              dispatch({ type:'SET_PENDING_SESSION', session:{ name: todayProgram.name, exercises: todayProgram.exercises, muscleGroup: todayProgram.type || 'mixed' }});
+              dispatch({type:'SET_TAB',tab:'workout'});
+            }}>
+              Train Now
+            </button>
+          </div>
+          <div className="program-exercises">
+            {todayProgram.exercises.map((ex, i) => (
+              <span key={i} className="program-ex-tag">{ex}</span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── MUSCLE RECOVERY ── */}
+      <div className="card">
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <div className="card-title" style={{margin:0}}>Muscle Recovery Status</div>
+          <div style={{display:'flex',gap:12,fontSize:12}}>
+            <span style={{color:'var(--green2)',fontWeight:700}}>{freshMuscles.length} ready</span>
+            <span style={{color:'var(--muted)'}}>·</span>
+            <span style={{color:'#E74C3C',fontWeight:700}}>{soreMuscles.length} sore</span>
+          </div>
+        </div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(155px,1fr))',gap:8}}>
+          {MUSCLES.map(m => {
+            const rec = getRecovery(state.muscleLog[m.id]);
+            return (
+              <div key={m.id} className={`recovery-item ${rec}`}>
+                <span>{m.label}</span>
+                <span className={`badge ${recoveryBadge[rec]}`} style={{fontSize:10}}>
+                  {rec === 'none' ? '—' : recoveryLabel[rec].split(' ')[0]}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+/* ── COMPONENT: WORKOUT TRACKER ─────────────────────── */
+function WorkoutTracker({ state, dispatch }) {
+  const [selectedMuscle, setSelectedMuscle] = useState('chest');
+  const [selectedExercises, setSelectedExercises] = useState([]);
+  const [sessionName, setSessionName] = useState('');
+  const [addModal, setAddModal] = useState(false);
+  const [customEx, setCustomEx] = useState('');
+  const [presetBanner, setPresetBanner] = useState(null);
+
+  useEffect(() => {
+    if (state.pendingSession && !state.activeSession) {
+      setSessionName(state.pendingSession.name);
+      setSelectedExercises(state.pendingSession.exercises);
+      setPresetBanner(state.pendingSession.name);
+      dispatch({ type: 'CLEAR_PENDING_SESSION' });
+    }
+  }, [state.pendingSession]);
+
+  const toggleEx = (name) => {
+    setSelectedExercises(prev =>
+      prev.includes(name) ? prev.filter(e => e !== name) : [...prev, name]
+    );
+  };
+
+  const startSession = () => {
+    if (!selectedExercises.length) return;
+    dispatch({ type:'START_SESSION', name: sessionName || `${selectedMuscle.charAt(0).toUpperCase()+selectedMuscle.slice(1)} Day`, exercises: selectedExercises, muscleGroup: selectedMuscle });
+    setSelectedExercises([]);
+    setSessionName('');
+    setPresetBanner(null);
+  };
+
+  const updateSet = (exIdx, setIdx, field, value) =>
+    dispatch({ type:'UPDATE_SET', exIdx, setIdx, field, value });
+
+  if (state.activeSession) {
+    const s = state.activeSession;
+    return (
+      <div>
+        <div className="page-header">
+          <div>
+            <div className="page-title">{s.name}</div>
+            <div className="page-sub">{s.exercises.length} exercises · Session in progress</div>
+          </div>
+          <div style={{display:'flex',gap:10}}>
+            <button className="btn btn-danger" onClick={() => dispatch({type:'DISCARD_SESSION'})}>Discard</button>
+            <button className="btn btn-primary btn-lg" onClick={() => dispatch({type:'COMPLETE_SESSION'})}>Finish Session</button>
+          </div>
+        </div>
+
+        {s.exercises.map((ex, exIdx) => (
+          <div key={exIdx} className="session-builder" style={{marginBottom:16}}>
+            <div className="session-header">
+              <div>
+                <div style={{fontWeight:700,fontSize:15,color:'var(--text)'}}>{ex.name}</div>
+                <span className="muscle-tag">{ex.muscle}</span>
+              </div>
+              <button className="btn btn-secondary btn-sm" onClick={() => dispatch({type:'ADD_SET',exIdx})}>+ Set</button>
+            </div>
+            <div style={{padding:'0 20px'}}>
+              <div className="set-row" style={{color:'var(--muted)',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'0.5px'}}>
+                <div style={{textAlign:'center'}}>Set</div>
+                <div>Weight (lbs)</div>
+                <div>Reps</div>
+                <div>RPE</div>
+                <div/>
+              </div>
+              {ex.sets.map((set, setIdx) => (
+                <div key={setIdx} className="set-row">
+                  <div className="set-num">{setIdx+1}</div>
+                  <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="0" value={set.weight} onChange={e=>updateSet(exIdx,setIdx,'weight',e.target.value)} aria-label={`Exercise ${exIdx+1} set ${setIdx+1} weight`}/>
+                  <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="0" value={set.reps}   onChange={e=>updateSet(exIdx,setIdx,'reps',e.target.value)}   aria-label={`Exercise ${exIdx+1} set ${setIdx+1} reps`}/>
+                  <input className="form-input" style={{padding:'7px 10px',fontSize:13}} type="number" placeholder="—" min="1" max="10" value={set.rpe||''} onChange={e=>updateSet(exIdx,setIdx,'rpe',e.target.value)} aria-label="RPE 1-10"/>
+                  <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)',padding:'4px 8px'}} onClick={() => {}} aria-label="Mark done">v</button>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <div className="page-title"><span className="gold-header">Workout Tracker</span></div>
+          <div className="page-sub">Build your session, log sets and reps</div>
+        </div>
+      </div>
+
+      {presetBanner && (
+        <div style={{background:'var(--green-dim)',border:'1px solid var(--green3)',borderRadius:'var(--radius)',padding:'14px 18px',marginBottom:20,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+          <div>
+            <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--green2)',marginBottom:3}}>Today's Recommended Split</div>
+            <div style={{fontSize:15,fontWeight:700,color:'var(--text)'}}>{presetBanner} — pre-loaded below</div>
+            <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>Add or remove exercises freely — only today is affected</div>
+          </div>
+          <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)'}} onClick={()=>{setPresetBanner(null);setSelectedExercises([]);setSessionName('');}}>Clear</button>
+        </div>
+      )}
+
+      <div className="grid-2" style={{marginBottom:24,gap:24}}>
+        <div>
+          <div className="card" style={{marginBottom:16}}>
+            <div className="card-title">1 — Name This Session (optional)</div>
+            <input className="form-input" placeholder="e.g. Push Day, Leg Day..." value={sessionName} onChange={e=>setSessionName(e.target.value)}/>
+          </div>
+          <div className="card">
+            <div className="card-title">2 — Pick Muscle Group</div>
+            <div style={{display:'flex',flexWrap:'wrap',gap:8,marginTop:4}}>
+              {Object.keys(EXERCISE_PRESETS).map(mg => (
+                <button key={mg} className={`btn btn-sm ${selectedMuscle===mg?'btn-primary':'btn-secondary'}`} onClick={() => { setSelectedMuscle(mg); setSelectedExercises([]); }} style={{textTransform:'capitalize'}}>
+                  {mg}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="card">
+          <div className="card-title">Session Preview</div>
+          {selectedExercises.length === 0
+            ? <div style={{color:'var(--muted)',fontSize:13,padding:'20px 0',textAlign:'center'}}>Select exercises from the list below</div>
+            : selectedExercises.map((ex, i) => (
+              <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center',padding:'9px 0',borderBottom:'1px solid var(--border)',fontSize:13}}>
+                <span style={{color:'var(--text)'}}>{ex}</span>
+                <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)'}} onClick={()=>toggleEx(ex)}>x</button>
+              </div>
+            ))
+          }
+          {selectedExercises.length > 0 &&
+            <button className="btn btn-primary btn-full" style={{marginTop:16}} onClick={startSession}>
+              Start Session ({selectedExercises.length} exercises)
+            </button>
+          }
+        </div>
+      </div>
+
+      <div className="sec-hdr"><div className="sec-label">3 — Select Exercises</div><div className="sec-line"/><button className="btn btn-secondary btn-sm" onClick={()=>setAddModal(true)}>+ Custom</button></div>
+      <div className="exercise-lib">
+        {EXERCISE_PRESETS[selectedMuscle].map(ex => (
+          <button key={ex} className={`ex-item ${selectedExercises.includes(ex)?'selected':''}`} onClick={()=>toggleEx(ex)} aria-pressed={selectedExercises.includes(ex)}>
+            <span>{ex}</span>
+            <span style={{color:selectedExercises.includes(ex)?'var(--green2)':'var(--muted)',fontSize:16,fontWeight:700}}>{selectedExercises.includes(ex)?'+':' '}</span>
+          </button>
+        ))}
+      </div>
+
+      {state.sessions.length > 0 && (
+        <>
+          <div className="sec-hdr" style={{marginTop:32}}><div className="sec-label">Recent Sessions</div><div className="sec-line"/></div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            {state.sessions.slice(0,5).map(s => (
+              <div key={s.id} className="card" style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 20px'}}>
+                <div>
+                  <div style={{fontWeight:700,fontSize:14,color:'var(--text)'}}>{s.name}</div>
+                  <div style={{fontSize:12,color:'var(--muted)',marginTop:2}}>{fmtDate(s.date)} · {s.exercises.length} exercises · {s.exercises.reduce((a,e)=>a+e.sets.length,0)} sets</div>
+                </div>
+                <span className="badge badge-green">Done</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {addModal && (
+        <Modal title="Add Custom Exercise" onClose={()=>setAddModal(false)} footer={<>
+          <button className="btn btn-secondary" onClick={()=>setAddModal(false)}>Cancel</button>
+          <button className="btn btn-primary" onClick={()=>{ if(customEx.trim()){ setSelectedExercises(p=>[...p,customEx.trim()]); setCustomEx(''); setAddModal(false); } }}>Add</button>
+        </>}>
+          <div className="form-group">
+            <label className="form-label">Exercise Name</label>
+            <input className="form-input" placeholder="e.g. Cable Crunch..." value={customEx} onChange={e=>setCustomEx(e.target.value)} autoFocus/>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ── COMPONENT: NUTRITION ───────────────────────────── */
+function Nutrition({ state, dispatch }) {
+  const [addModal, setAddModal]     = useState(null);
+  const [customItem, setCustomItem] = useState({ name:'', cal:'', p:'', c:'', f:'' });
+  const [goalsModal, setGoalsModal] = useState(false);
+  const [goalsDraft, setGoalsDraft] = useState(state.nutritionGoals);
+  const [foodSearch, setFoodSearch] = useState('');
+
+  const todayMeals = state.mealLog[TODAY] || { breakfast:[], lunch:[], dinner:[], snacks:[] };
+  const macros = sumMacros(todayMeals);
+  const water  = state.waterLog[TODAY] || 0;
+  const ng     = state.nutritionGoals;
+  const customFoods = state.customFoods || [];
+
+  const logPreset = (meal, item) => { dispatch({ type:'LOG_MEAL', meal, item }); setAddModal(null); setFoodSearch(''); };
+  const logCustom = (meal) => {
+    if (!customItem.name.trim()) return;
+    const item = { name: customItem.name, cal:+customItem.cal||0, p:+customItem.p||0, c:+customItem.c||0, f:+customItem.f||0 };
+    dispatch({ type:'LOG_MEAL', meal, item });
+    setCustomItem({ name:'', cal:'', p:'', c:'', f:'' });
+    setAddModal(null);
+    setFoodSearch('');
+  };
+  const saveAndLogCustom = (meal) => {
+    if (!customItem.name.trim()) return;
+    const item = { name: customItem.name, cal:+customItem.cal||0, p:+customItem.p||0, c:+customItem.c||0, f:+customItem.f||0 };
+    dispatch({ type:'SAVE_CUSTOM_FOOD', food: item });
+    dispatch({ type:'LOG_MEAL', meal, item });
+    setCustomItem({ name:'', cal:'', p:'', c:'', f:'' });
+    setAddModal(null);
+    setFoodSearch('');
+  };
+
+  const filterFoods = (items) => {
+    if (!foodSearch.trim()) return items;
+    return items.filter(i => i.name.toLowerCase().includes(foodSearch.toLowerCase()));
+  };
+
+  const MacroRing = () => {
+    const ref = useRef(null);
+    const chartRef = useRef(null);
+    const remaining = Math.max(0, ng.calories - macros.cal);
+    useEffect(() => {
+      if (chartRef.current) chartRef.current.destroy();
+      chartRef.current = new Chart(ref.current, {
+        type:'doughnut',
+        data:{ datasets:[{ data:[macros.p*4, macros.c*4, macros.f*9, Math.max(0,remaining)], backgroundColor:['#C4818A','#E8A4B0','#A86570','#F0C4CC'], borderWidth:0, hoverOffset:4 }] },
+        options:{ cutout:'72%', plugins:{ legend:{ display:false }, tooltip:{ enabled:false } }, animation:{ duration:600 } }
+      });
+      return () => chartRef.current?.destroy();
+    }, [macros.cal, macros.p, macros.c, macros.f]);
+    return (
+      <div style={{display:'flex',alignItems:'center',gap:24}}>
+        <div className="macro-ring-wrap">
+          <canvas ref={ref} width="140" height="140"/>
+          <div className="macro-ring-center">
+            <div className="macro-cal">{macros.cal}</div>
+            <div className="macro-sub">kcal</div>
+          </div>
+        </div>
+        <div className="macro-legend">
+          {[['#C4818A','Protein',macros.p+'g',ng.protein+'g'],['#E8A4B0','Carbs',macros.c+'g',ng.carbs+'g'],['#A86570','Fat',macros.f+'g',ng.fat+'g']].map(([color,label,val,goal])=>(
+            <div key={label} className="macro-leg-row">
+              <div className="macro-dot" style={{background:color}}/>
+              <span className="macro-leg-label">{label}</span>
+              <span className="macro-leg-val">{val}<span style={{color:'var(--muted)',fontWeight:400,fontSize:11}}>/{goal}</span></span>
+            </div>
+          ))}
+          <div style={{marginTop:4}}>
+            <ProgressBar val={macros.cal} max={ng.calories} label="Calories"/>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <div className="page-title"><span className="gold-header">Nutrition</span></div>
+          <div className="page-sub">Track meals, macros, and hydration — Goal: {ng.calories} cal / {ng.protein}g protein</div>
+        </div>
+        <button className="btn btn-secondary" onClick={()=>{ setGoalsDraft(ng); setGoalsModal(true); }}>Goals</button>
+      </div>
+
+      <div className="grid-2" style={{marginBottom:24}}>
+        <div className="card card-green">
+          <div className="card-title">Today's Macros</div>
+          <MacroRing/>
+        </div>
+        <div className="card">
+          <div className="card-title">Hydration — {water} / {ng.water} cups</div>
+          <div className="water-tracker" style={{marginTop:8}}>
+            {Array.from({length:ng.water}).map((_,i) => (
+              <button key={i} className={`water-cup ${i<water?'filled':''}`} onClick={()=>dispatch({type:'SET_WATER',cups: i<water?i:i+1})} aria-label={`Cup ${i+1} ${i<water?'full':'empty'}`}>
+                <div className="water-fill" style={{height: i<water?'100%':'0%'}}/>
+              </button>
+            ))}
+          </div>
+          <div style={{fontSize:13,color:'var(--muted)',marginTop:12}}>
+            Click cups to track · {Math.max(0,ng.water-water)} more to hit goal
+          </div>
+        </div>
+      </div>
+
+      {['breakfast','lunch','dinner','snacks'].map(meal => {
+        const items = todayMeals[meal] || [];
+        const mealCals = items.reduce((a,i)=>a+(i.cal||0),0);
+        return (
+          <div key={meal} className="meal-section">
+            <div className="meal-header">
+              <div className="meal-title" style={{color:'var(--text)'}}>{meal.charAt(0).toUpperCase()+meal.slice(1)}</div>
+              <div style={{display:'flex',alignItems:'center',gap:12}}>
+                {mealCals>0 && <span className="meal-cals">{mealCals} kcal</span>}
+                <button className="btn btn-primary btn-sm" onClick={()=>setAddModal(meal)}>+ Add</button>
+              </div>
+            </div>
+            <div className="meal-body">
+              {items.length === 0
+                ? <div style={{padding:'14px 16px',color:'var(--muted)',fontSize:13}}>Nothing logged yet — tap + Add</div>
+                : items.map((item,idx) => (
+                  <div key={idx} className="meal-item">
+                    <span className="meal-item-name">{item.name}</span>
+                    <div className="meal-item-macros">
+                      <span className="meal-macro">{item.cal}cal</span>
+                      <span className="meal-macro">{item.p}p</span>
+                      <span className="meal-macro">{item.c}c</span>
+                      <span className="meal-macro">{item.f}f</span>
+                    </div>
+                    <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)',padding:'2px 6px'}} onClick={()=>dispatch({type:'REMOVE_MEAL',meal,idx})} aria-label={`Remove ${item.name}`}>x</button>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        );
+      })}
+
+      {addModal && (
+        <Modal title={`Add to ${addModal.charAt(0).toUpperCase()+addModal.slice(1)}`} onClose={()=>{ setAddModal(null); setFoodSearch(''); }}>
+
+          {/* Search */}
+          <input
+            className="form-input"
+            placeholder="Search all foods..."
+            value={foodSearch}
+            onChange={e=>setFoodSearch(e.target.value)}
+            style={{marginBottom:16}}
+            autoFocus
+          />
+
+          <div style={{maxHeight:340,overflowY:'auto',marginBottom:16,display:'flex',flexDirection:'column',gap:6}}>
+
+            {/* Saved Recipes */}
+            {customFoods.length > 0 && (
+              <>
+                <div className="sec-hdr" style={{marginBottom:4}}><div className="sec-label" style={{color:'var(--green2)'}}>My Saved Recipes</div><div className="sec-line"/></div>
+                {filterFoods(customFoods).map((item,i) => (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:6}}>
+                    <button className="ex-item" style={{flex:1,textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
+                      <span style={{color:'var(--text)'}}>{item.name}</span>
+                      <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
+                    </button>
+                    <button className="btn btn-ghost btn-sm" style={{color:'var(--muted)',flexShrink:0}} onClick={()=>dispatch({type:'DELETE_CUSTOM_FOOD',idx:i})} aria-label="Delete saved food">x</button>
+                  </div>
+                ))}
+              </>
+            )}
+
+            {/* Recommended for this meal */}
+            {filterFoods(MEAL_PRESETS[addModal]||[]).length > 0 && (
+              <>
+                <div className="sec-hdr" style={{marginBottom:4}}><div className="sec-label">Recommended — {addModal}</div><div className="sec-line"/></div>
+                {filterFoods(MEAL_PRESETS[addModal]||[]).map((item,i) => (
+                  <button key={i} className="ex-item" style={{width:'100%',textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
+                    <span style={{color:'var(--text)'}}>{item.name}</span>
+                    <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
+                  </button>
+                ))}
+              </>
+            )}
+
+            {/* All other meal categories */}
+            {['breakfast','lunch','dinner','snacks'].filter(m=>m!==addModal).map(mealType => {
+              const filtered = filterFoods(MEAL_PRESETS[mealType]||[]);
+              if (filtered.length === 0) return null;
+              return (
+                <React.Fragment key={mealType}>
+                  <div className="sec-hdr" style={{marginBottom:4}}><div className="sec-label">{mealType}</div><div className="sec-line"/></div>
+                  {filtered.map((item,i) => (
+                    <button key={i} className="ex-item" style={{width:'100%',textAlign:'left'}} onClick={()=>logPreset(addModal,item)}>
+                      <span style={{color:'var(--text)'}}>{item.name}</span>
+                      <span style={{color:'var(--muted)',fontSize:11,fontFamily:'var(--mono)'}}>{item.cal} cal · {item.p}p·{item.c}c·{item.f}f</span>
+                    </button>
+                  ))}
+                </React.Fragment>
+              );
+            })}
+
+          </div>
+
+          {/* Custom Entry */}
+          <div className="sec-hdr" style={{marginBottom:10}}><div className="sec-label">Custom Entry</div><div className="sec-line"/></div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+            <div className="form-group" style={{gridColumn:'1/-1'}}>
+              <label className="form-label">Food Name</label>
+              <input className="form-input" placeholder="e.g. Jerk Chicken Bowl..." value={customItem.name} onChange={e=>setCustomItem(p=>({...p,name:e.target.value}))}/>
+            </div>
+            {[['cal','Calories'],['p','Protein (g)'],['c','Carbs (g)'],['f','Fat (g)']].map(([k,lbl])=>(
+              <div key={k} className="form-group">
+                <label className="form-label">{lbl}</label>
+                <input className="form-input" type="number" placeholder="0" value={customItem[k]} onChange={e=>setCustomItem(p=>({...p,[k]:e.target.value}))}/>
+              </div>
+            ))}
+          </div>
+          <div style={{display:'flex',gap:10,marginTop:14}}>
+            <button className="btn btn-secondary" style={{flex:1}} onClick={()=>logCustom(addModal)}>Log Only</button>
+            <button className="btn btn-primary" style={{flex:2}} onClick={()=>saveAndLogCustom(addModal)}>Save Recipe &amp; Log</button>
+          </div>
+        </Modal>
+      )}
+
+      {goalsModal && (
+        <Modal title="Nutrition Goals" onClose={()=>setGoalsModal(false)} footer={<>
+          <button className="btn btn-secondary" onClick={()=>setGoalsModal(false)}>Cancel</button>
+          <button className="btn btn-primary" onClick={()=>{ dispatch({type:'SET_NUTRITION_GOALS',goals:{ calories:+goalsDraft.calories, protein:+goalsDraft.protein, carbs:+goalsDraft.carbs, fat:+goalsDraft.fat, water:+goalsDraft.water }}); setGoalsModal(false); }}>Save</button>
+        </>}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            {[['calories','Daily Calories'],['protein','Protein (g)'],['carbs','Carbs (g)'],['fat','Fat (g)'],['water','Water (cups)']].map(([k,lbl])=>(
+              <div key={k} className="form-group">
+                <label className="form-label">{lbl}</label>
+                <input className="form-input" type="number" value={goalsDraft[k]} onChange={e=>setGoalsDraft(p=>({...p,[k]:e.target.value}))}/>
+              </div>
+            ))}
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ── COMPONENT: MUSCLE MAP ──────────────────────────── */
+function MuscleMap({ state, dispatch }) {
+  const [view, setView]           = useState('front');
+  const [selected, setSelected]   = useState(null);
+  const [pickedExs, setPickedExs] = useState([]);
+
+  const selectedMuscle = selected ? MUSCLES.find(m=>m.id===selected) : null;
+  const entry          = selected ? state.muscleLog[selected] : null;
+  const rec            = selected ? getRecovery(entry) : null;
+  const trainedToday   = rec === 'sore';
+  const loggedExs      = getMuscleExercises(entry);
+  const loggedIntensity= getMuscleIntensity(entry);
+  const intensityInfo  = getIntensityLevel(trainedToday ? loggedIntensity : pickedExs.length);
+
+  // When selecting a new muscle, load any previously logged exercises for today
+  const handleSelect = (id) => {
+    setSelected(id);
+    const e = state.muscleLog[id];
+    if (e && getRecovery(e) === 'sore') {
+      setPickedExs(getMuscleExercises(e));
+    } else {
+      setPickedExs([]);
+    }
+  };
+
+  const toggleEx = (ex) => {
+    setPickedExs(prev => prev.includes(ex) ? prev.filter(e=>e!==ex) : [...prev, ex]);
+  };
+
+  const handleTrain = () => {
+    const exs = pickedExs.length > 0 ? pickedExs : [];
+    dispatch({ type:'TRAIN_MUSCLE', id:selected, exercises:exs, intensity:Math.min(5, exs.length || 1) });
+  };
+
+  const handleUntrain = () => {
+    dispatch({ type:'UNTRAIN_MUSCLE', id:selected });
+    setPickedExs([]);
+  };
+
+  // ── SVG helpers ────────────────────────────────────────
+  const getFill = (id) => {
+    const r = getRecovery(state.muscleLog[id]);
+    if (r==='fresh')    return id===selected ? 'rgba(78,139,71,0.75)' : 'rgba(58,107,53,0.55)';
+    if (r==='moderate') return id===selected ? 'rgba(200,137,26,0.65)' : 'rgba(200,137,26,0.45)';
+    if (r==='sore')     return id===selected ? 'rgba(231,76,60,0.65)'  : 'rgba(192,57,43,0.45)';
+    return id===selected ? '#E8B0BC' : '#F5D0D8';
+  };
+  const getStroke = (id) => {
+    if (id === selected) return '#ffffff';
+    const r = getRecovery(state.muscleLog[id]);
+    if (r==='fresh')    return '#C4818A';
+    if (r==='moderate') return '#C8891A';
+    if (r==='sore')     return '#E74C3C';
+    return '#363636';
+  };
+  const sw = (id) => id===selected ? '2' : '1.5';
+  const mp = (id) => ({ className:`muscle-group-path${id===selected?' selected':''}`, style:{cursor:'pointer'}, onClick:()=>handleSelect(id) });
+
+  // ── CALLOUT POSITIONS ─────────────────────────────────────
+  const FRONT_CALLOUTS = {
+    shoulders: { from:[36, 100], to:[-32, 90], label:'Shoulders' },
+    chest:     { from:[78, 120], to:[-32, 132], label:'Chest' },
+    biceps:    { from:[28, 170], to:[-32, 178], label:'Biceps' },
+    forearms:  { from:[20, 258], to:[-32, 240], label:'Forearms' },
+    core:      { from:[100, 220], to:[240, 198], label:'Core / Abs' },
+    quads:     { from:[68, 348], to:[-32, 332], label:'Quads' },
+    calves:    { from:[74, 432], to:[-32, 422], label:'Calves' },
+  };
+  const BACK_CALLOUTS = {
+    traps:      { from:[100, 96],  to:[240, 86], label:'Trapezius' },
+    back:       { from:[58, 174],  to:[-32, 168], label:'Back / Lats' },
+    triceps:    { from:[28, 168],  to:[240, 142], label:'Triceps' },
+    forearms:   { from:[180, 258], to:[240, 230], label:'Forearms' },
+    glutes:     { from:[74, 280],  to:[240, 268], label:'Glutes' },
+    hamstrings: { from:[70, 360],  to:[-32, 354], label:'Hamstrings' },
+    calves:     { from:[74, 440],  to:[-32, 446], label:'Calves' },
+  };
+
+  const Callout = ({data}) => {
+    if (!data) return null;
+    const labelW = Math.max(72, data.label.length * 7.4 + 22);
+    const onLeft = data.to[0] < 0;
+    const rectX = onLeft ? data.to[0] - labelW + 4 : data.to[0] - 4;
+    return (
+      <g pointerEvents="none">
+        <line x1={data.from[0]} y1={data.from[1]} x2={data.to[0]} y2={data.to[1]}
+              stroke="#B8860B" strokeWidth="1.3" strokeDasharray="3,2"/>
+        <circle cx={data.from[0]} cy={data.from[1]} r="3.5" fill="#FFD700" stroke="#B8860B" strokeWidth="1.2"/>
+        <rect x={rectX} y={data.to[1]-12} width={labelW} height="24" rx="12"
+              fill="#FFFBEA" stroke="#DAA520" strokeWidth="1.4"
+              filter="drop-shadow(0 2px 4px rgba(184,134,11,0.25))"/>
+        <text x={rectX + labelW/2} y={data.to[1]+4.5} textAnchor="middle"
+              fontSize="11" fontWeight="700" fill="#5C1A2A" fontFamily="Inter,sans-serif">
+          {data.label}
+        </text>
+      </g>
+    );
+  };
+
+  // ── FRONT BODY (anatomical female, clean human proportions) ──────
+  const FrontBody = () => (
+    <svg viewBox="-50 -10 300 520" width="240" height="450" xmlns="http://www.w3.org/2000/svg" style={{overflow:'visible'}} role="img" aria-label="Front body muscle map">
+      <defs>
+        <radialGradient id="skinGradF" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#FDEAED"/>
+          <stop offset="100%" stopColor="#EDB8C4"/>
+        </radialGradient>
+      </defs>
+
+      {/* HEAD */}
+      <ellipse cx="100" cy="34" rx="20" ry="26" fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* NECK */}
+      <path d="M 90,58 C 89,66 89,74 91,80 L 109,80 C 111,74 111,66 110,58 Z" fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.2"/>
+      <path d="M 90,80 C 96,84 104,84 110,80" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.8" pointerEvents="none"/>
+
+      {/* TORSO (hourglass female silhouette) */}
+      <path d="
+        M 56,82
+        C 50,92 46,110 48,130
+        C 50,150 54,168 60,184
+        C 64,196 70,208 76,218
+        L 78,228
+        C 72,238 64,250 58,264
+        C 52,278 50,292 54,302
+        L 100,306
+        L 146,302
+        C 150,292 148,278 142,264
+        C 136,250 128,238 122,228
+        L 124,218
+        C 130,208 136,196 140,184
+        C 146,168 150,150 152,130
+        C 154,110 150,92 144,82
+        C 134,80 116,78 100,78
+        C 84,78 66,80 56,82 Z
+      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* LEFT ARM (separated from torso, hanging slightly out) */}
+      <path d="
+        M 50,82
+        C 38,86 28,98 24,116
+        C 22,134 24,154 28,172
+        L 28,194
+        C 24,212 18,234 14,256
+        C 10,274 8,288 12,298
+        C 16,304 24,306 30,302
+        L 32,314 L 38,316 L 42,310 L 40,294
+        C 42,278 46,256 50,234
+        L 50,212 C 52,194 50,174 50,156
+        C 52,138 54,118 56,100
+        L 60,82 L 50,82 Z
+      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* RIGHT ARM (mirror) */}
+      <path d="
+        M 150,82
+        C 162,86 172,98 176,116
+        C 178,134 176,154 172,172
+        L 172,194
+        C 176,212 182,234 186,256
+        C 190,274 192,288 188,298
+        C 184,304 176,306 170,302
+        L 168,314 L 162,316 L 158,310 L 160,294
+        C 158,278 154,256 150,234
+        L 150,212 C 148,194 150,174 150,156
+        C 148,138 146,118 144,100
+        L 140,82 L 150,82 Z
+      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* LEFT LEG */}
+      <path d="
+        M 54,304
+        C 50,328 50,354 54,378
+        C 56,392 58,400 60,408
+        C 60,420 60,432 62,442
+        C 64,454 66,464 68,474
+        L 72,486
+        L 86,490
+        L 94,486
+        L 96,472
+        C 96,460 96,446 96,432
+        C 96,418 94,406 92,394
+        C 90,384 88,374 88,360
+        C 86,344 84,326 84,304
+        L 54,304 Z
+      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      {/* knee detail line */}
+      <path d="M 60,378 C 70,388 84,388 90,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+
+      {/* RIGHT LEG */}
+      <path d="
+        M 146,304
+        C 150,328 150,354 146,378
+        C 144,392 142,400 140,408
+        C 140,420 140,432 138,442
+        C 136,454 134,464 132,474
+        L 128,486
+        L 114,490
+        L 106,486
+        L 104,472
+        C 104,460 104,446 104,432
+        C 104,418 106,406 108,394
+        C 110,384 112,374 112,360
+        C 114,344 116,326 116,304
+        L 146,304 Z
+      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      <path d="M 110,378 C 116,388 130,388 140,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+
+      {/* clavicle hints */}
+      <path d="M 92,82 C 80,80 66,82 56,86" fill="none" stroke="rgba(180,100,120,0.4)" strokeWidth="1.1" pointerEvents="none"/>
+      <path d="M 108,82 C 120,80 134,82 144,86" fill="none" stroke="rgba(180,100,120,0.4)" strokeWidth="1.1" pointerEvents="none"/>
+
+      {/* === MUSCLE REGIONS (clickable) === */}
+
+      {/* SHOULDERS — deltoid caps */}
+      <path d="
+        M 58,82 C 46,86 36,96 32,110 C 28,122 32,134 42,138
+        C 52,140 60,134 64,124 C 66,114 64,98 62,82 L 58,82 Z
+      " fill={getFill('shoulders')} stroke={getStroke('shoulders')} strokeWidth={sw('shoulders')} {...mp('shoulders')}/>
+      <path d="
+        M 142,82 C 154,86 164,96 168,110 C 172,122 168,134 158,138
+        C 148,140 140,134 136,124 C 134,114 136,98 138,82 L 142,82 Z
+      " fill={getFill('shoulders')} stroke={getStroke('shoulders')} strokeWidth={sw('shoulders')} {...mp('shoulders')}/>
+
+      {/* CHEST — pectoralis (two halves with bust suggestion) */}
+      <path d="
+        M 70,86 C 58,94 52,110 54,128 C 58,146 72,156 88,158 L 100,158
+        L 100,108 C 96,98 92,90 86,84 L 70,86 Z
+      " fill={getFill('chest')} stroke={getStroke('chest')} strokeWidth={sw('chest')} {...mp('chest')}/>
+      <path d="
+        M 130,86 C 142,94 148,110 146,128 C 142,146 128,156 112,158 L 100,158
+        L 100,108 C 104,98 108,90 114,84 L 130,86 Z
+      " fill={getFill('chest')} stroke={getStroke('chest')} strokeWidth={sw('chest')} {...mp('chest')}/>
+      <path d="M 56,144 C 70,156 86,160 100,160 C 114,160 130,156 144,144" fill="none" stroke="rgba(180,100,120,0.25)" strokeWidth="0.9" pointerEvents="none"/>
+      <line x1="100" y1="84" x2="100" y2="158" stroke="rgba(180,100,120,0.3)" strokeWidth="0.7" pointerEvents="none"/>
+
+      {/* BICEPS — front upper arm */}
+      <path d="
+        M 26,124 C 22,144 22,166 26,184 C 30,196 38,200 44,194
+        C 48,176 48,154 46,132 C 44,122 32,118 26,124 Z
+      " fill={getFill('biceps')} stroke={getStroke('biceps')} strokeWidth={sw('biceps')} {...mp('biceps')}/>
+      <path d="
+        M 174,124 C 178,144 178,166 174,184 C 170,196 162,200 156,194
+        C 152,176 152,154 154,132 C 156,122 168,118 174,124 Z
+      " fill={getFill('biceps')} stroke={getStroke('biceps')} strokeWidth={sw('biceps')} {...mp('biceps')}/>
+
+      {/* FOREARMS */}
+      <path d="
+        M 22,210 C 16,232 12,256 12,278 C 14,290 22,296 30,290
+        C 32,272 36,250 38,228 C 38,212 30,202 22,210 Z
+      " fill={getFill('forearms')} stroke={getStroke('forearms')} strokeWidth={sw('forearms')} {...mp('forearms')}/>
+      <path d="
+        M 178,210 C 184,232 188,256 188,278 C 186,290 178,296 170,290
+        C 168,272 164,250 162,228 C 162,212 170,202 178,210 Z
+      " fill={getFill('forearms')} stroke={getStroke('forearms')} strokeWidth={sw('forearms')} {...mp('forearms')}/>
+
+      {/* CORE — rectus abdominis + obliques (tight waist) */}
+      <path d="
+        M 86,168 C 78,184 74,202 74,222 C 74,238 78,252 86,260 L 100,262
+        L 100,168 L 86,168 Z
+      " fill={getFill('core')} stroke={getStroke('core')} strokeWidth={sw('core')} {...mp('core')}/>
+      <path d="
+        M 114,168 C 122,184 126,202 126,222 C 126,238 122,252 114,260 L 100,262
+        L 100,168 L 114,168 Z
+      " fill={getFill('core')} stroke={getStroke('core')} strokeWidth={sw('core')} {...mp('core')}/>
+      {[186,204,222,240].map(y=>(
+        <line key={y} x1="88" y1={y} x2="112" y2={y} stroke="rgba(180,100,120,0.22)" strokeWidth="0.7" pointerEvents="none"/>
+      ))}
+      <line x1="100" y1="166" x2="100" y2="262" stroke="rgba(180,100,120,0.3)" strokeWidth="0.8" pointerEvents="none"/>
+      {/* Hip curve */}
+      <path d="M 50,278 C 64,294 82,300 100,302 C 118,300 136,294 150,278" fill="none" stroke="rgba(180,100,120,0.32)" strokeWidth="1" pointerEvents="none"/>
+
+      {/* QUADS — front of thighs */}
+      <path d="
+        M 56,310 C 52,332 52,358 56,382 L 86,382 C 86,358 84,332 82,310 L 56,310 Z
+      " fill={getFill('quads')} stroke={getStroke('quads')} strokeWidth={sw('quads')} {...mp('quads')}/>
+      <path d="
+        M 144,310 C 148,332 148,358 144,382 L 114,382 C 114,358 116,332 118,310 L 144,310 Z
+      " fill={getFill('quads')} stroke={getStroke('quads')} strokeWidth={sw('quads')} {...mp('quads')}/>
+      {/* quad center lines */}
+      <line x1="71" y1="310" x2="71" y2="380" stroke="rgba(180,100,120,0.25)" strokeWidth="0.7" pointerEvents="none"/>
+      <line x1="129" y1="310" x2="129" y2="380" stroke="rgba(180,100,120,0.25)" strokeWidth="0.7" pointerEvents="none"/>
+
+      {/* CALVES — tibialis + gastroc lateral peek */}
+      <path d="
+        M 62,400 C 60,420 60,442 64,462 C 68,472 76,474 82,468
+        C 84,452 86,432 86,412 C 86,398 70,392 62,400 Z
+      " fill={getFill('calves')} stroke={getStroke('calves')} strokeWidth={sw('calves')} {...mp('calves')}/>
+      <path d="
+        M 138,400 C 140,420 140,442 136,462 C 132,472 124,474 118,468
+        C 116,452 114,432 114,412 C 114,398 130,392 138,400 Z
+      " fill={getFill('calves')} stroke={getStroke('calves')} strokeWidth={sw('calves')} {...mp('calves')}/>
+
+      {/* CALLOUT */}
+      <Callout data={FRONT_CALLOUTS[selected]}/>
+    </svg>
+  );
+
+  // ── BACK BODY (anatomical female, posterior view) ────────────────
+  const BackBody = () => (
+    <svg viewBox="-50 -10 300 520" width="240" height="450" xmlns="http://www.w3.org/2000/svg" style={{overflow:'visible'}} role="img" aria-label="Back body muscle map">
+      <defs>
+        <radialGradient id="skinGradB" cx="50%" cy="35%" r="65%">
+          <stop offset="0%" stopColor="#FDEAED"/>
+          <stop offset="100%" stopColor="#EDB8C4"/>
+        </radialGradient>
+      </defs>
+
+      {/* HEAD */}
+      <ellipse cx="100" cy="34" rx="20" ry="26" fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* NECK */}
+      <path d="M 90,58 C 89,66 89,74 91,80 L 109,80 C 111,74 111,66 110,58 Z" fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.2"/>
+
+      {/* TORSO (same hourglass) */}
+      <path d="
+        M 56,82
+        C 50,92 46,110 48,130
+        C 50,150 54,168 60,184
+        C 64,196 70,208 76,218
+        L 78,228
+        C 72,238 64,250 58,264
+        C 52,278 50,292 54,302
+        L 100,306
+        L 146,302
+        C 150,292 148,278 142,264
+        C 136,250 128,238 122,228
+        L 124,218
+        C 130,208 136,196 140,184
+        C 146,168 150,150 152,130
+        C 154,110 150,92 144,82
+        C 134,80 116,78 100,78
+        C 84,78 66,80 56,82 Z
+      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* LEFT ARM */}
+      <path d="
+        M 50,82
+        C 38,86 28,98 24,116
+        C 22,134 24,154 28,172
+        L 28,194
+        C 24,212 18,234 14,256
+        C 10,274 8,288 12,298
+        C 16,304 24,306 30,302
+        L 32,314 L 38,316 L 42,310 L 40,294
+        C 42,278 46,256 50,234
+        L 50,212 C 52,194 50,174 50,156
+        C 52,138 54,118 56,100
+        L 60,82 L 50,82 Z
+      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* RIGHT ARM */}
+      <path d="
+        M 150,82
+        C 162,86 172,98 176,116
+        C 178,134 176,154 172,172
+        L 172,194
+        C 176,212 182,234 186,256
+        C 190,274 192,288 188,298
+        C 184,304 176,306 170,302
+        L 168,314 L 162,316 L 158,310 L 160,294
+        C 158,278 154,256 150,234
+        L 150,212 C 148,194 150,174 150,156
+        C 148,138 146,118 144,100
+        L 140,82 L 150,82 Z
+      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+
+      {/* LEFT LEG */}
+      <path d="
+        M 54,304
+        C 50,328 50,354 54,378
+        C 56,392 58,400 60,408
+        C 60,420 60,432 62,442
+        C 64,454 66,464 68,474
+        L 72,486
+        L 86,490
+        L 94,486
+        L 96,472
+        C 96,460 96,446 96,432
+        C 96,418 94,406 92,394
+        C 90,384 88,374 88,360
+        C 86,344 84,326 84,304
+        L 54,304 Z
+      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+      <path d="M 60,378 C 70,388 84,388 90,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+
+      {/* RIGHT LEG */}
+      <path d="
+        M 146,304
+        C 150,328 150,354 146,378
+        C 144,392 142,400 140,408
+        C 140,420 140,432 138,442
+        C 136,454 134,464 132,474
+        L 128,486
+        L 114,490
+        L 106,486
+        L 104,472
+        C 104,460 104,446 104,432
+        C 104,418 106,406 108,394
+        C 110,384 112,374 112,360
+        C 114,344 116,326 116,304
+        L 146,304 Z
+      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+      <path d="M 110,378 C 116,388 130,388 140,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+
+      {/* === MUSCLE REGIONS === */}
+
+      {/* TRAPEZIUS (upper wedge only — yoke across shoulders) */}
+      <path d="
+        M 96,82 C 84,84 72,88 60,96 C 50,104 44,116 44,126
+        C 46,132 52,134 60,132 C 72,128 84,126 96,124 L 100,122 L 104,124
+        C 116,126 128,128 140,132 C 148,134 154,132 156,126
+        C 156,116 150,104 140,96 C 128,88 116,84 104,82 L 96,82 Z
+      " fill={getFill('traps')} stroke={getStroke('traps')} strokeWidth={sw('traps')} {...mp('traps')}/>
+
+      {/* SHOULDERS (rear deltoid) */}
+      <path d="
+        M 58,82 C 46,86 36,96 32,110 C 28,122 32,134 42,138
+        C 52,140 60,134 64,124 C 66,114 64,98 62,82 L 58,82 Z
+      " fill={getFill('shoulders')} stroke={getStroke('shoulders')} strokeWidth={sw('shoulders')} {...mp('shoulders')}/>
+      <path d="
+        M 142,82 C 154,86 164,96 168,110 C 172,122 168,134 158,138
+        C 148,140 140,134 136,124 C 134,114 136,98 138,82 L 142,82 Z
+      " fill={getFill('shoulders')} stroke={getStroke('shoulders')} strokeWidth={sw('shoulders')} {...mp('shoulders')}/>
+
+      {/* LATS / BACK — slim sharp V-taper supporting the hourglass */}
+      <path d="
+        M 64,134
+        C 58,148 56,162 60,178
+        C 68,194 80,206 94,212
+        L 98,214
+        L 98,134
+        L 64,134 Z
+      " fill={getFill('back')} stroke={getStroke('back')} strokeWidth={sw('back')} {...mp('back')}/>
+      <path d="
+        M 136,134
+        C 142,148 144,162 140,178
+        C 132,194 120,206 106,212
+        L 102,214
+        L 102,134
+        L 136,134 Z
+      " fill={getFill('back')} stroke={getStroke('back')} strokeWidth={sw('back')} {...mp('back')}/>
+      {/* spine */}
+      <line x1="100" y1="80" x2="100" y2="214" stroke="rgba(180,100,120,0.4)" strokeWidth="0.9" pointerEvents="none"/>
+
+      {/* TRICEPS — back of upper arm */}
+      <path d="
+        M 26,124 C 22,144 22,166 26,184 C 30,196 38,200 44,194
+        C 48,176 48,154 46,132 C 44,122 32,118 26,124 Z
+      " fill={getFill('triceps')} stroke={getStroke('triceps')} strokeWidth={sw('triceps')} {...mp('triceps')}/>
+      <path d="
+        M 174,124 C 178,144 178,166 174,184 C 170,196 162,200 156,194
+        C 152,176 152,154 154,132 C 156,122 168,118 174,124 Z
+      " fill={getFill('triceps')} stroke={getStroke('triceps')} strokeWidth={sw('triceps')} {...mp('triceps')}/>
+
+      {/* FOREARM EXTENSORS */}
+      <path d="
+        M 22,210 C 16,232 12,256 12,278 C 14,290 22,296 30,290
+        C 32,272 36,250 38,228 C 38,212 30,202 22,210 Z
+      " fill={getFill('forearms')} stroke={getStroke('forearms')} strokeWidth={sw('forearms')} {...mp('forearms')}/>
+      <path d="
+        M 178,210 C 184,232 188,256 188,278 C 186,290 178,296 170,290
+        C 168,272 164,250 162,228 C 162,212 170,202 178,210 Z
+      " fill={getFill('forearms')} stroke={getStroke('forearms')} strokeWidth={sw('forearms')} {...mp('forearms')}/>
+
+      {/* GLUTES — fitted to body, rounded but not oversized */}
+      <path d="
+        M 56,250
+        C 48,262 44,276 44,292
+        C 44,308 52,322 64,328
+        C 76,332 88,330 94,324
+        C 98,318 98,308 96,298
+        C 94,286 90,272 84,262
+        C 78,252 66,246 56,250 Z
+      " fill={getFill('glutes')} stroke={getStroke('glutes')} strokeWidth={sw('glutes')} {...mp('glutes')}/>
+      <path d="
+        M 144,250
+        C 152,262 156,276 156,292
+        C 156,308 148,322 136,328
+        C 124,332 112,330 106,324
+        C 102,318 102,308 104,298
+        C 106,286 110,272 116,262
+        C 122,252 134,246 144,250 Z
+      " fill={getFill('glutes')} stroke={getStroke('glutes')} strokeWidth={sw('glutes')} {...mp('glutes')}/>
+      {/* gluteal fold */}
+      <path d="M 48,322 C 64,338 82,342 100,342 C 118,342 136,338 152,322" fill="none" stroke="rgba(180,100,120,0.45)" strokeWidth="1" pointerEvents="none"/>
+      {/* center cleft */}
+      <line x1="100" y1="250" x2="100" y2="340" stroke="rgba(180,100,120,0.42)" strokeWidth="1" pointerEvents="none"/>
+      {/* glute roundness highlights */}
+      <path d="M 60,268 C 64,282 70,294 78,304" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.9" pointerEvents="none"/>
+      <path d="M 140,268 C 136,282 130,294 122,304" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.9" pointerEvents="none"/>
+
+      {/* HAMSTRINGS — back of thighs (moved up under glutes) */}
+      <path d="
+        M 56,360 C 52,380 52,402 56,422 C 58,432 62,438 68,436
+        C 76,432 80,424 82,414 C 84,398 84,378 84,360 L 56,360 Z
+      " fill={getFill('hamstrings')} stroke={getStroke('hamstrings')} strokeWidth={sw('hamstrings')} {...mp('hamstrings')}/>
+      <path d="
+        M 144,360 C 148,380 148,402 144,422 C 142,432 138,438 132,436
+        C 124,432 120,424 118,414 C 116,398 116,378 116,360 L 144,360 Z
+      " fill={getFill('hamstrings')} stroke={getStroke('hamstrings')} strokeWidth={sw('hamstrings')} {...mp('hamstrings')}/>
+
+      {/* CALVES — gastrocnemius (back of lower leg, lower than hams) */}
+      <path d="
+        M 60,432 C 56,452 58,470 64,478 C 68,484 76,484 82,478
+        C 86,460 88,444 88,430 C 88,420 70,418 60,432 Z
+      " fill={getFill('calves')} stroke={getStroke('calves')} strokeWidth={sw('calves')} {...mp('calves')}/>
+      <path d="
+        M 140,432 C 144,452 142,470 136,478 C 132,484 124,484 118,478
+        C 114,460 112,444 112,430 C 112,420 130,418 140,432 Z
+      " fill={getFill('calves')} stroke={getStroke('calves')} strokeWidth={sw('calves')} {...mp('calves')}/>
+
+      {/* CALLOUT */}
+      <Callout data={BACK_CALLOUTS[selected]}/>
+    </svg>
+  );
+
+  // ── RENDER ──────────────────────────────────────────────
+  const availableExs = EXERCISE_PRESETS[selected] || EXERCISE_PRESETS['chest'] || [];
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <div className="page-title"><span className="gold-header">Muscle Focus</span></div>
+          <div className="page-sub">Click any muscle to log exercises and track recovery</div>
+        </div>
+        <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:6}}>
+          <div className="today-badge">
+            <div className="today-badge-dot"/>
+            {new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'})}
+          </div>
+          {(() => {
+            const trained = MUSCLES.filter(m => getRecovery(state.muscleLog[m.id]) === 'sore');
+            return trained.length > 0
+              ? <div style={{fontSize:11,color:'var(--muted)'}}>
+                  {trained.length} muscle{trained.length!==1?'s':''} trained today
+                </div>
+              : <div style={{fontSize:11,color:'var(--muted)'}}>No muscles logged yet today</div>;
+          })()}
+        </div>
+      </div>
+
+      <div className="grid-2" style={{gap:24,alignItems:'start'}}>
+        {/* ── LEFT: diagram ── */}
+        <div>
+          <div className="body-toggle">
+            <button className={view==='front'?'active':''} onClick={()=>setView('front')}>Front</button>
+            <button className={view==='back'?'active':''} onClick={()=>setView('back')}>Back</button>
+          </div>
+          <div className="body-diagram-wrap">
+            {view==='front' ? <FrontBody/> : <BackBody/>}
+          </div>
+          <div className="muscle-legend" style={{marginTop:12}}>
+            {[['#C4818A','Ready'],['#C8891A','Recovering'],['#E74C3C','Sore'],['#F0C4CC','Not Logged']].map(([c,l])=>(
+              <div key={l} className="muscle-leg-item"><div className="muscle-leg-dot" style={{background:c,border:'1px solid rgba(255,255,255,0.12)'}}/>{l}</div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── RIGHT: detail panel ── */}
+        <div>
+          {selectedMuscle ? (
+            <div className="muscle-detail-panel">
+              {/* Header */}
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                <div style={{fontSize:20,fontWeight:800,color:'var(--text)'}}>{selectedMuscle.label}</div>
+                <span className={`badge ${recoveryBadge[rec]}`}>{recoveryLabel[rec]}</span>
+              </div>
+
+              {/* Last trained */}
+              <div className="stat-row">
+                <span className="stat-label">Last Trained</span>
+                <span className="stat-val">{getMuscleDate(entry) ? fmtDate(getMuscleDate(entry)) : 'Never'}</span>
+              </div>
+
+              {/* Intensity meter — shown if trained (today or before) */}
+              {trainedToday && (
+                <>
+                  <div className="divider" style={{margin:'12px 0'}}/>
+                  <div className="intensity-meter">
+                    <div className="intensity-info">
+                      <div className="intensity-label">Workout Intensity</div>
+                      <div className="intensity-name" style={{color:getIntensityLevel(loggedIntensity).color}}>
+                        Level {loggedIntensity} — {getIntensityLevel(loggedIntensity).label}
+                      </div>
+                    </div>
+                    <div className="intensity-bars">
+                      {[1,2,3,4,5].map(i=>(
+                        <div key={i} className={`intensity-bar${i<=loggedIntensity?' filled':''}`}
+                          style={i<=loggedIntensity?{background:getIntensityLevel(loggedIntensity).color}:{}}/>
+                      ))}
+                    </div>
+                  </div>
+                  {loggedExs.length>0 && (
+                    <div style={{display:'flex',flexWrap:'wrap',gap:5,marginTop:8,marginBottom:4}}>
+                      {loggedExs.map(ex=>(
+                        <span key={ex} style={{padding:'3px 9px',background:'var(--green-dim)',color:'var(--green2)',borderRadius:99,fontSize:11,fontWeight:600,border:'1px solid var(--green3)'}}>{ex}</span>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="divider" style={{margin:'12px 0'}}/>
+
+              {/* Exercise picker */}
+              <div className="card-title" style={{marginBottom:4}}>
+                {trainedToday ? 'Exercises Logged' : 'Select Exercises Performed'}
+              </div>
+              {!trainedToday && (
+                <>
+                  <div className="ex-picker-grid">
+                    {availableExs.map(ex=>(
+                      <button key={ex} className={`ex-pill${pickedExs.includes(ex)?' active':''}`} onClick={()=>toggleEx(ex)}>{ex}</button>
+                    ))}
+                  </div>
+
+                  {/* Live intensity preview */}
+                  {pickedExs.length > 0 && (
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginTop:10,padding:'8px 12px',background:'var(--surface2)',borderRadius:'var(--radius-sm)',border:'1px solid var(--border)'}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:1,color:'var(--muted)'}}>Preview</div>
+                        <div style={{fontSize:13,fontWeight:700,color:intensityInfo.color}}>Level {pickedExs.length} — {intensityInfo.label}</div>
+                      </div>
+                      <div style={{display:'flex',gap:3}}>
+                        {[1,2,3,4,5].map(i=>(
+                          <div key={i} style={{width:8,height:22,borderRadius:3,background:i<=pickedExs.length?intensityInfo.color:'var(--surface3)',border:'1px solid '+(i<=pickedExs.length?'transparent':'var(--border)')}}/>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="divider" style={{margin:'12px 0'}}/>
+
+              {/* Action buttons */}
+              {trainedToday ? (
+                <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                  <div style={{fontSize:12,color:'var(--green2)',fontWeight:600,textAlign:'center',padding:'4px 0'}}>Logged as trained today</div>
+                  <button className="btn btn-danger btn-full btn-sm" onClick={handleUntrain}>
+                    Revert — Mark as Not Trained
+                  </button>
+                </div>
+              ) : (
+                <button className="btn btn-primary btn-full" onClick={handleTrain}
+                  style={{opacity: pickedExs.length===0 ? 0.7 : 1}}>
+                  {pickedExs.length > 0
+                    ? `Mark as Trained — Level ${pickedExs.length} (${pickedExs.length} exercise${pickedExs.length!==1?'s':''})`
+                    : 'Mark as Trained Today'}
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="card" style={{textAlign:'center',padding:'48px 20px'}}>
+              <div style={{fontSize:40,marginBottom:12,opacity:0.2}}>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.39 48.39 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.401.604-.401.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.036 0-1.875-1.008-1.875-2.25s.84-2.25 1.875-2.25c.369 0 .713.128 1.003.349.283.215.604.401.959.401v0c.333 0 .599-.277.58-.61a48.1 48.1 0 00-.630-5.427 48.039 48.039 0 00-4.717-.582.532.532 0 00-.57.533v0z"/></svg>
+              </div>
+              <div style={{fontSize:14,fontWeight:700,marginBottom:8,color:'var(--text)'}}>Click a muscle on the diagram</div>
+              <div style={{fontSize:13,color:'var(--muted)',lineHeight:1.5}}>Select which exercises you did, and the app will calculate your intensity level automatically</div>
+            </div>
+          )}
+
+          {/* All muscle groups list */}
+          <div className="card" style={{marginTop:16}}>
+            <div className="card-title">All Muscle Groups</div>
+            {MUSCLES.map(m => {
+              const e2 = state.muscleLog[m.id];
+              const r2 = getRecovery(e2);
+              const il = getMuscleIntensity(e2);
+              const ilInfo = getIntensityLevel(il);
+              return (
+                <button key={m.id} className="stat-row" style={{width:'100%',cursor:'pointer',background:'none',border:'none',color:'inherit',textAlign:'left'}} onClick={()=>handleSelect(m.id)}>
+                  <span className="stat-label">{m.label}</span>
+                  <div style={{display:'flex',alignItems:'center',gap:6}}>
+                    {r2==='sore' && il>0 && <span style={{fontSize:10,fontWeight:700,color:ilInfo.color}}>L{il}</span>}
+                    <span className={`badge ${recoveryBadge[r2]}`} style={{fontSize:10}}>{recoveryLabel[r2]}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── COMPONENT: PROGRESS & GOALS ────────────────────── */
+/* ── COMPONENT: ICLOUD SYNC CARD ─────────────────── */
+function SyncCard({ state, dispatch }) {
+  const [importStatus, setImportStatus] = React.useState(null); // 'success' | 'error' | null
+  const [confirmImport, setConfirmImport] = React.useState(null); // parsed payload pending confirm
+  const importRef = React.useRef(null);
+
+  const handleExport = () => {
+    const payload = {
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      device: navigator.userAgent.includes('iPhone') || navigator.userAgent.includes('iPad') ? 'iPhone' : 'Mac',
+      data: {
+        sessions:       state.sessions,
+        muscleLog:      state.muscleLog,
+        strengthLog:    state.strengthLog,
+        mealLog:        state.mealLog,
+        waterLog:       state.waterLog,
+        weightLog:      state.weightLog,
+        measurements:   state.measurements,
+        nutritionGoals: state.nutritionGoals,
+        goals:          state.goals,
+      }
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `workout-focus-${TODAY}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target.result);
+        if (!parsed.data) throw new Error('Invalid file');
+        setConfirmImport(parsed);
+      } catch {
+        setImportStatus('error');
+        setTimeout(() => setImportStatus(null), 3000);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const confirmAndImport = () => {
+    dispatch({ type: 'IMPORT_DATA', payload: confirmImport.data });
+    setConfirmImport(null);
+    setImportStatus('success');
+    setTimeout(() => setImportStatus(null), 3000);
+  };
+
+  const isMobile = /iPhone|iPad|Android/i.test(navigator.userAgent);
+
+  return (
+    <div className="card" style={{marginTop:24}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+        <div>
+          <div className="card-title" style={{margin:0}}>iCloud Sync</div>
+          <div style={{fontSize:12,color:'var(--muted)',marginTop:3}}>
+            Export your data and import it on another device via iCloud Drive
+          </div>
+        </div>
+        {importStatus === 'success' && (
+          <span style={{fontSize:12,color:'var(--green2)',fontWeight:600}}>Imported successfully</span>
+        )}
+        {importStatus === 'error' && (
+          <span style={{fontSize:12,color:'var(--red)',fontWeight:600}}>Invalid file</span>
+        )}
+      </div>
+
+      {/* How it works */}
+      <div style={{background:'var(--surface2)',borderRadius:10,padding:'12px 14px',marginBottom:16,border:'1px solid var(--border)'}}>
+        <div style={{fontSize:11,color:'var(--muted)',fontWeight:700,letterSpacing:'0.08em',textTransform:'uppercase',marginBottom:8}}>How to sync</div>
+        <div style={{display:'flex',flexDirection:'column',gap:6}}>
+          {[
+            ['1', isMobile ? 'Tap Export — save the file to iCloud Drive (Files app)' : 'Click Export — save the .json file to iCloud Drive folder'],
+            ['2', isMobile ? 'On your Mac, open the app → Progress → Import' : 'On your iPhone, open the app → Progress → Import'],
+            ['3', 'Select the file from iCloud Drive — all your data loads instantly'],
+          ].map(([n, text]) => (
+            <div key={n} style={{display:'flex',gap:10,alignItems:'flex-start'}}>
+              <div style={{width:18,height:18,borderRadius:'50%',background:'var(--green-dim)',border:'1px solid var(--green3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,fontWeight:700,color:'var(--green2)',flexShrink:0,marginTop:1}}>{n}</div>
+              <span style={{fontSize:12,color:'var(--text2)',lineHeight:1.5}}>{text}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{display:'flex',gap:10}}>
+        <button className="btn btn-primary" style={{flex:1}} onClick={handleExport}>
+          Export Data
+          <span style={{fontSize:11,opacity:0.7,marginLeft:6}}>
+            ({state.sessions.length} sessions · {state.weightLog.length} weigh-ins)
+          </span>
+        </button>
+        <button className="btn btn-secondary" style={{flex:1}} onClick={()=>importRef.current?.click()}>
+          Import Data
+        </button>
+        <input ref={importRef} type="file" accept=".json" style={{display:'none'}} onChange={handleFileChange}/>
+      </div>
+
+      {/* Confirm import modal */}
+      {confirmImport && (
+        <Modal title="Replace all data?" onClose={()=>setConfirmImport(null)} footer={<>
+          <button className="btn btn-secondary" onClick={()=>setConfirmImport(null)}>Cancel</button>
+          <button className="btn btn-primary" onClick={confirmAndImport}>Yes, import</button>
+        </>}>
+          <div style={{fontSize:13,color:'var(--text2)',lineHeight:1.7}}>
+            <p>This will replace <strong style={{color:'var(--text)'}}>all data on this device</strong> with the backup from:</p>
+            <p style={{marginTop:8,fontFamily:'var(--mono)',fontSize:12,color:'var(--muted)',background:'var(--surface2)',padding:'8px 12px',borderRadius:6}}>
+              {new Date(confirmImport.exportedAt).toLocaleString()} · {confirmImport.device}
+            </p>
+            <p style={{marginTop:10,color:'var(--muted)',fontSize:12}}>
+              Contains {confirmImport.data?.sessions?.length||0} sessions, {confirmImport.data?.weightLog?.length||0} weight entries, {Object.keys(confirmImport.data?.muscleLog||{}).length} muscle records.
+            </p>
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ── COMPONENT: WORKOUT CALENDAR ─────────────────── */
+function WorkoutCalendar({ state }) {
+  const [calDate, setCalDate]       = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(null);
+
+  const year  = calDate.getFullYear();
+  const month = calDate.getMonth();
+  const monthLabel = calDate.toLocaleString('default', { month:'long', year:'numeric' });
+
+  // Build 'YYYY-MM-DD' → activity summary map once
+  const activityMap = React.useMemo(() => {
+    const map = {};
+    // Sessions
+    state.sessions.forEach(s => {
+      if (!s.date) return;
+      if (!map[s.date]) map[s.date] = { sessions:[], muscles:[], hasNutrition:false, weight:null };
+      map[s.date].sessions.push(s);
+    });
+    // Muscles trained
+    Object.entries(state.muscleLog).forEach(([id, entry]) => {
+      const d = getMuscleDate(entry);
+      if (!d) return;
+      if (!map[d]) map[d] = { sessions:[], muscles:[], hasNutrition:false, weight:null };
+      map[d].muscles.push(id);
+    });
+    // Nutrition
+    Object.entries(state.mealLog).forEach(([d]) => {
+      if (!map[d]) map[d] = { sessions:[], muscles:[], hasNutrition:false, weight:null };
+      map[d].hasNutrition = true;
+    });
+    // Weight
+    state.weightLog.forEach(w => {
+      if (!map[w.date]) map[w.date] = { sessions:[], muscles:[], hasNutrition:false, weight:null };
+      map[w.date].weight = w.weight;
+    });
+    return map;
+  }, [state.sessions, state.muscleLog, state.mealLog, state.weightLog]);
+
+  // Calendar grid
+  const firstDow    = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const cells = [];
+  for (let i = 0; i < firstDow; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) {
+    const ds = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    cells.push({ day:d, dateStr:ds });
+  }
+
+  const selData = selectedDay ? (activityMap[selectedDay] || { sessions:[], muscles:[], hasNutrition:false, weight:null }) : null;
+
+  const MUSCLE_COLORS = {
+    chest:'#e74c3c', shoulders:'#3498db', biceps:'#e67e22', triceps:'#9b59b6',
+    forearms:'#1abc9c', core:'#f39c12', back:'#2980b9', traps:'#27ae60',
+    lowerback:'#c0392b', glutes:'#8e44ad', quads:'#16a085', hamstrings:'#d35400', calves:'#7f8c8d',
+  };
+
+  return (
+    <div className="card" style={{marginBottom:24}}>
+      {/* Header */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+        <div className="card-title" style={{margin:0}}>Activity Calendar</div>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <button className="cal-nav-btn" onClick={()=>setCalDate(new Date(year,month-1,1))}>‹</button>
+          <span style={{fontSize:13,fontWeight:700,color:'var(--text)',minWidth:138,textAlign:'center'}}>{monthLabel}</span>
+          <button className="cal-nav-btn" onClick={()=>setCalDate(new Date(year,month+1,1))}>›</button>
+        </div>
+      </div>
+
+      {/* Day-of-week labels */}
+      <div className="cal-grid">
+        {['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d=>(
+          <div key={d} className="cal-day-label">{d}</div>
+        ))}
+
+        {/* Day cells */}
+        {cells.map((cell,i)=>{
+          if (!cell) return <div key={`e${i}`} className="cal-day cal-empty"/>;
+          const a = activityMap[cell.dateStr];
+          const isToday    = cell.dateStr === TODAY;
+          const isSelected = cell.dateStr === selectedDay;
+          const hasAny     = !!a;
+
+          return (
+            <div
+              key={cell.dateStr}
+              className={`cal-day${isToday?' cal-today':''}${isSelected?' cal-selected':''}`}
+              onClick={()=>setSelectedDay(isSelected ? null : cell.dateStr)}
+            >
+              <span className="cal-day-num">{cell.day}</span>
+              {hasAny && (
+                <div className="cal-dots">
+                  {(a.sessions.length>0) && <div className="cal-dot" style={{background:'#C4818A'}}/>}
+                  {(a.muscles.length>0)  && a.muscles.slice(0,3).map(m=>(
+                    <div key={m} className="cal-dot" style={{background: MUSCLE_COLORS[m]||'#888'}}/>
+                  ))}
+                  {a.hasNutrition && <div className="cal-dot" style={{background:'#4488ff'}}/>}
+                  {a.weight       && <div className="cal-dot" style={{background:'#aaa'}}/>}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legend */}
+      <div style={{display:'flex',gap:14,marginTop:14,flexWrap:'wrap'}}>
+        {[['#C4818A','Workout'],['#e67e22','Muscles'],['#E8A4B0','Nutrition'],['#9B7080','Weight']].map(([c,l])=>(
+          <div key={l} style={{display:'flex',alignItems:'center',gap:5,fontSize:11,color:'var(--muted)'}}>
+            <div style={{width:7,height:7,borderRadius:'50%',background:c}}/>
+            {l}
+          </div>
+        ))}
+      </div>
+
+      {/* Selected day detail panel */}
+      {selectedDay && selData && (
+        <div className="cal-day-detail">
+          <div style={{fontSize:14,fontWeight:700,color:'var(--text)',marginBottom:12}}>
+            {new Date(selectedDay+'T12:00:00').toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'})}
+            {selectedDay === TODAY && <span style={{marginLeft:8,fontSize:11,color:'var(--green2)',fontWeight:600}}>· Today</span>}
+          </div>
+
+          {selData.sessions.length===0 && selData.muscles.length===0 && !selData.hasNutrition && !selData.weight ? (
+            <div style={{color:'var(--muted)',fontSize:13}}>No activity logged this day.</div>
+          ) : (
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              {selData.sessions.length>0 && (
+                <div>
+                  <div className="cal-section-label" style={{color:'#4E8B47'}}>Workout</div>
+                  {selData.sessions.map((s,i)=>(
+                    <div key={i} style={{fontSize:13,color:'var(--text2)',marginBottom:3}}>
+                      <span style={{color:'var(--text)',fontWeight:600}}>{s.name}</span>
+                      <span style={{color:'var(--muted)',marginLeft:8}}>
+                        {s.exercises.length} exercise{s.exercises.length!==1?'s':''} · {s.exercises.reduce((a,e)=>a+e.sets.length,0)} sets
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {selData.muscles.length>0 && (
+                <div>
+                  <div className="cal-section-label" style={{color:'#e67e22'}}>Muscles Trained</div>
+                  <div style={{display:'flex',flexWrap:'wrap',gap:4}}>
+                    {selData.muscles.map(m=>(
+                      <span key={m} className="cal-pill" style={{background:MUSCLE_COLORS[m]+'22',color:MUSCLE_COLORS[m],border:`1px solid ${MUSCLE_COLORS[m]}55`}}>
+                        {MUSCLES.find(x=>x.id===m)?.label||m}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selData.hasNutrition && (()=>{
+                const d = state.mealLog[selectedDay]||{};
+                const items = [...(d.breakfast||[]),...(d.lunch||[]),...(d.dinner||[]),...(d.snacks||[])];
+                const cal = items.reduce((a,b)=>a+(b.calories||0),0);
+                const pro = items.reduce((a,b)=>a+(b.protein||0),0);
+                return (
+                  <div>
+                    <div className="cal-section-label" style={{color:'#4488ff'}}>Nutrition</div>
+                    <div style={{fontSize:13,color:'var(--text2)'}}>
+                      <span style={{color:'var(--text)',fontWeight:600}}>{items.length}</span> meals logged ·{' '}
+                      <span style={{color:'var(--text)',fontWeight:600}}>{cal}</span> cal ·{' '}
+                      <span style={{color:'#C4818A',fontWeight:600}}>{pro}g</span> protein
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {selData.weight && (
+                <div>
+                  <div className="cal-section-label" style={{color:'#aaa'}}>Body Weight</div>
+                  <div style={{fontSize:13,color:'var(--text2)'}}>
+                    <span style={{color:'var(--text)',fontWeight:600,fontFamily:'var(--mono)',fontSize:16}}>{selData.weight}</span>
+                    <span style={{color:'var(--muted)',marginLeft:4}}>lbs</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Progress({ state, dispatch }) {
+  const [weightInput, setWeightInput] = useState('');
+  const [goalsModal, setGoalsModal]   = useState(false);
+  const [goalsDraft, setGoalsDraft]   = useState(state.goals);
+  const weightChartRef = useRef(null);
+  const weightChart    = useRef(null);
+
+  useEffect(() => {
+    if (weightChart.current) weightChart.current.destroy();
+    const labels = state.weightLog.map(e => fmtDate(e.date));
+    const data   = state.weightLog.map(e => e.weight);
+    if (!weightChartRef.current || data.length === 0) return;
+    weightChart.current = new Chart(weightChartRef.current, {
+      type: 'line',
+      data: {
+        labels,
+        datasets:[{ label:'Weight (lbs)', data, borderColor:'#C4818A', backgroundColor:'rgba(196,129,138,0.12)', borderWidth:2, pointBackgroundColor:'#D4939B', pointRadius:4, tension:0.3, fill:true }]
+      },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ ticks:{ color:'#888', font:{size:11} }, grid:{ color:'#1a1a1a' } },
+          y:{ ticks:{ color:'#888', font:{size:11} }, grid:{ color:'#1a1a1a' } }
+        }
+      }
+    });
+    return () => weightChart.current?.destroy();
+  }, [state.weightLog]);
+
+  const prs = Object.entries(state.strengthLog).map(([name, sets]) => {
+    const best = sets.reduce((a,b) => (b.weight > a.weight ? b : a), sets[0]);
+    return { name, weight: best.weight, reps: best.reps, date: best.date };
+  });
+
+  const g = state.goals;
+
+  return (
+    <div>
+      <div className="page-header">
+        <div>
+          <div className="page-title"><span className="gold-header">Progress and Goals</span></div>
+          <div className="page-sub">Track weight, PRs, and long-term targets — Goal: {g.targetWeight ? g.targetWeight+' lbs' : 'Not set'}</div>
+        </div>
+        <button className="btn btn-secondary" onClick={()=>{ setGoalsDraft(state.goals); setGoalsModal(true); }}>Set Goals</button>
+      </div>
+
+      <WorkoutCalendar state={state}/>
+
+      <div className="grid-4" style={{marginBottom:24}}>
+        {[['Target Weight', g.targetWeight ? g.targetWeight+' lbs':'Not set', state.weightLog.length ? state.weightLog[state.weightLog.length-1].weight+' lbs current':'No data'],
+          ['Bench PR',      g.targetBench    ? g.targetBench+' lbs':'Not set',   prs.find(p=>p.name==='Bench Press')?.weight ? prs.find(p=>p.name==='Bench Press').weight+' lbs current':'Log a session'],
+          ['Squat PR',      g.targetSquat    ? g.targetSquat+' lbs':'Not set',   prs.find(p=>p.name==='Back Squat')?.weight ? prs.find(p=>p.name==='Back Squat').weight+' lbs current':'Log a session'],
+          ['Deadlift PR',   g.targetDeadlift ? g.targetDeadlift+' lbs':'Not set',prs.find(p=>p.name==='Deadlift')?.weight ? prs.find(p=>p.name==='Deadlift').weight+' lbs current':'Log a session'],
+        ].map(([title,target,current])=>(
+          <div key={title} className="card">
+            <div className="card-title">{title}</div>
+            <div className="card-value" style={{fontSize:20,color:'var(--text)'}}>{target}</div>
+            <div className="card-sub">{current}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="card" style={{marginBottom:24}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
+          <div className="card-title" style={{margin:0}}>Weight Log</div>
+          <div style={{display:'flex',gap:8,alignItems:'center'}}>
+            <input className="form-input" style={{width:120,padding:'7px 10px'}} type="number" placeholder="lbs" value={weightInput} onChange={e=>setWeightInput(e.target.value)}/>
+            <button className="btn btn-primary btn-sm" onClick={()=>{ if(weightInput){ dispatch({type:'LOG_WEIGHT',weight:+weightInput}); setWeightInput(''); } }}>Log</button>
+          </div>
+        </div>
+        {state.weightLog.length > 0
+          ? <div className="chart-wrap"><canvas ref={weightChartRef}/></div>
+          : <div style={{padding:'40px 0',textAlign:'center',color:'var(--muted)',fontSize:13}}>No weight logged yet — enter your weight above to start tracking</div>
+        }
+      </div>
+
+      <div className="card">
+        <div className="card-title" style={{marginBottom:16}}>Personal Records</div>
+        {prs.length === 0
+          ? <div style={{padding:'20px 0',textAlign:'center',color:'var(--muted)',fontSize:13}}>Complete a workout session to see your PRs here</div>
+          : <table className="pr-table">
+              <thead><tr><th>Exercise</th><th>Best Weight</th><th>Reps</th><th>Date</th></tr></thead>
+              <tbody>
+                {prs.map((pr,i) => (
+                  <tr key={i}>
+                    <td style={{color:'var(--text2)'}}>{pr.name}</td>
+                    <td>{pr.weight} lbs</td>
+                    <td>{pr.reps}</td>
+                    <td style={{color:'var(--muted)',fontFamily:'var(--mono)',fontSize:12}}>{fmtDate(pr.date)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        }
+      </div>
+
+      <div className="grid-3" style={{marginTop:24}}>
+        <div className="card card-green">
+          <div className="card-title">Total Sessions</div>
+          <div className="card-value">{state.sessions.length}</div>
+          <div className="card-sub">Workouts logged</div>
+        </div>
+        <div className="card">
+          <div className="card-title">Total Sets</div>
+          <div className="card-value">{state.sessions.reduce((a,s)=>a+s.exercises.reduce((b,e)=>b+e.sets.length,0),0)}</div>
+          <div className="card-sub">Across all sessions</div>
+        </div>
+        <div className="card">
+          <div className="card-title">Exercises Tracked</div>
+          <div className="card-value">{Object.keys(state.strengthLog).length}</div>
+          <div className="card-sub">Unique lifts logged</div>
+        </div>
+      </div>
+
+      <SyncCard state={state} dispatch={dispatch}/>
+
+      {goalsModal && (
+        <Modal title="Set Your Goals" onClose={()=>setGoalsModal(false)} footer={<>
+          <button className="btn btn-secondary" onClick={()=>setGoalsModal(false)}>Cancel</button>
+          <button className="btn btn-primary" onClick={()=>{ dispatch({type:'SET_GOALS',goals:goalsDraft}); setGoalsModal(false); }}>Save Goals</button>
+        </>}>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:14}}>
+            {[['targetWeight','Target Weight (lbs)'],['targetBodyFat','Target Body Fat (%)'],['targetBench','Bench Press Goal (lbs)'],['targetSquat','Squat Goal (lbs)'],['targetDeadlift','Deadlift Goal (lbs)']].map(([k,lbl])=>(
+              <div key={k} className="form-group">
+                <label className="form-label">{lbl}</label>
+                <input className="form-input" type="number" placeholder="—" value={goalsDraft[k]} onChange={e=>setGoalsDraft(p=>({...p,[k]:e.target.value}))}/>
+              </div>
+            ))}
+          </div>
+        </Modal>
+      )}
+    </div>
+  );
+}
+
+/* ── COMPONENT: APP ─────────────────────────────────── */
+const NAV = [
+  { id:'home',     label:'Home',      Icon: IconHome },
+  { id:'workout',  label:'Workout',   Icon: IconWorkout },
+  { id:'nutrition',label:'Nutrition', Icon: IconNutrition },
+  { id:'muscles',  label:'Muscles',   Icon: IconMuscles },
+  { id:'progress', label:'Progress',  Icon: IconProgress },
+];
+
+function App() {
+  const saved = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch { return null; } })();
+  const [state, dispatch] = useReducer(reducer, saved || INITIAL_STATE);
+
+  useEffect(() => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+  }, [state]);
+
+  const setTab = (tab) => dispatch({ type:'SET_TAB', tab });
+  const now = new Date();
+  const dateStr = `${DAYS[now.getDay()]} ${MONTHS[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+
+  return (
+    <div className="app-shell">
+      <nav className="sidebar" aria-label="Main navigation">
+        <div className="sidebar-logo">
+          <h1><span className="gold-header">Judith's App</span></h1>
+          <span>✦ Fitness · Nutrition · Glow</span>
+        </div>
+        <ul className="nav-list" role="list">
+          {NAV.map(n => (
+            <li key={n.id}>
+              <button className={`nav-btn ${state.tab===n.id?'active':''}`} onClick={()=>setTab(n.id)} aria-current={state.tab===n.id?'page':undefined}>
+                <span className="nav-icon" aria-hidden="true"><n.Icon/></span>
+                {n.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="sidebar-footer">
+          <div className="sidebar-date">{dateStr}</div>
+        </div>
+      </nav>
+
+      <main className="main-content" id="main-content" tabIndex="-1">
+        {state.tab==='home'      && <Home          state={state} dispatch={dispatch}/>}
+        {state.tab==='workout'   && <WorkoutTracker state={state} dispatch={dispatch}/>}
+        {state.tab==='nutrition' && <Nutrition     state={state} dispatch={dispatch}/>}
+        {state.tab==='muscles'   && <MuscleMap     state={state} dispatch={dispatch}/>}
+        {state.tab==='progress'  && <Progress      state={state} dispatch={dispatch}/>}
+      </main>
+
+      <nav className="mobile-nav" aria-label="Mobile navigation">
+        {NAV.map(n => (
+          <button key={n.id} className={`mob-btn ${state.tab===n.id?'active':''}`} onClick={()=>setTab(n.id)} aria-current={state.tab===n.id?'page':undefined}>
+            <span className="mob-icon" aria-hidden="true"><n.Icon/></span>
+            {n.label}
+          </button>
+        ))}
+      </nav>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {});
+  }
+</script>
+</body>
+</html>
