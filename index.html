@@ -19,23 +19,24 @@
 <style>
 /* ── DESIGN TOKENS ─────────────────────────────── */
 :root {
-  --bg:        #FFFFFF;
-  --surface:   #FFF5F7;
-  --surface2:  #FFEDF1;
-  --surface3:  #FFE2E8;
-  --border:    #F0C4CC;
-  --border2:   #E8AFBA;
-  --text:      #1A0A0F;
-  --text2:     #4A2030;
-  --muted:     #9B7080;
-  --green:     #C4818A;
-  --green2:    #D4939B;
-  --green3:    #A86570;
-  --green-dim: rgba(196,129,138,0.15);
-  --green-glow:rgba(196,129,138,0.35);
-  --amber:     #C8891A;
+  --bg:        linear-gradient(180deg, #FFFBFE 0%, #FBF2FA 50%, #F8EAF6 100%);
+  --bg-solid:  #FBF4F8;
+  --surface:   #FBF2F8;
+  --surface2:  #F4E4F2;
+  --surface3:  #EDD2EA;
+  --border:    #E0BFD6;
+  --border2:   #C9A0BE;
+  --text:      #1F0F1A;
+  --text2:     #4A2548;
+  --muted:     #8E708A;
+  --green:     #B870A8;
+  --green2:    #C988BC;
+  --green3:    #8E508A;
+  --green-dim: rgba(184,112,168,0.15);
+  --green-glow:rgba(184,112,168,0.35);
+  --amber:     #B070C8;
   --red:       #C0392B;
-  --pink:      #F4A7B5;
+  --pink:      #E8A8D0;
   --radius:    12px;
   --radius-sm: 8px;
   --shadow:    0 4px 24px rgba(26,10,15,0.10);
@@ -51,6 +52,7 @@ html { font-size: 16px; -webkit-text-size-adjust: 100%; }
 body {
   font-family: var(--font);
   background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
   overflow-x: hidden;
@@ -88,7 +90,7 @@ ul, ol { list-style: none; }
 /* Desktop sidebar nav */
 .sidebar {
   width: var(--sidebar-w);
-  background: var(--surface);
+  background: linear-gradient(180deg, #FBF2F8 0%, #F0DCEC 50%, #E8CDE5 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
@@ -184,7 +186,7 @@ ul, ol { list-style: none; }
 
 /* ── CARDS ──────────────────────────────────────── */
 .card {
-  background: var(--surface);
+  background: linear-gradient(135deg, #FFFBFD 0%, #F8EAF4 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
@@ -429,7 +431,7 @@ select.form-input option { background: var(--surface2); }
 
 /* Stat cards with accent bar */
 .stat-card-accent {
-  background: var(--surface);
+  background: linear-gradient(135deg, #FFFBFD 0%, #F4E4F2 100%);
   border: 1px solid var(--border);
   border-left: 3px solid var(--green);
   border-radius: var(--radius);
@@ -507,7 +509,7 @@ select.form-input option { background: var(--surface2); }
 .ex-item.selected { border-color: var(--green); background: var(--green-dim); color: var(--green2); font-weight: 600; }
 
 .session-builder {
-  background: var(--surface);
+  background: linear-gradient(135deg, #FFFBFD 0%, #F4E4F2 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
@@ -669,7 +671,7 @@ select.form-input option { background: var(--surface2); }
 .muscle-leg-dot { width: 12px; height: 12px; border-radius: 3px; }
 
 .muscle-detail-panel {
-  background: var(--surface);
+  background: linear-gradient(135deg, #FFFBFD 0%, #F4E4F2 100%);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 20px;
@@ -889,7 +891,7 @@ select.form-input option { background: var(--surface2); }
     bottom: 0; left: 0; right: 0;
     /* 64px nav + home indicator safe area */
     height: calc(64px + env(safe-area-inset-bottom));
-    background: var(--surface);
+    background: linear-gradient(180deg, #FBF2F8 0%, #F0DCEC 100%);
     border-top: 1px solid var(--border);
     z-index: 100;
     /* horizontal safe area for landscape */
@@ -1974,18 +1976,18 @@ function MuscleMap({ state, dispatch }) {
   // ── SVG helpers ────────────────────────────────────────
   const getFill = (id) => {
     const r = getRecovery(state.muscleLog[id]);
-    if (r==='fresh')    return id===selected ? 'rgba(78,139,71,0.75)' : 'rgba(58,107,53,0.55)';
-    if (r==='moderate') return id===selected ? 'rgba(200,137,26,0.65)' : 'rgba(200,137,26,0.45)';
+    if (r==='fresh')    return id===selected ? 'rgba(184,112,168,0.75)' : 'rgba(184,112,168,0.55)';
+    if (r==='moderate') return id===selected ? 'rgba(176,112,200,0.65)' : 'rgba(176,112,200,0.45)';
     if (r==='sore')     return id===selected ? 'rgba(231,76,60,0.65)'  : 'rgba(192,57,43,0.45)';
-    return id===selected ? '#E8B0BC' : '#F5D0D8';
+    return id===selected ? '#D8A6CC' : '#EBD0E4';
   };
   const getStroke = (id) => {
     if (id === selected) return '#ffffff';
     const r = getRecovery(state.muscleLog[id]);
-    if (r==='fresh')    return '#C4818A';
-    if (r==='moderate') return '#C8891A';
+    if (r==='fresh')    return '#B870A8';
+    if (r==='moderate') return '#B070C8';
     if (r==='sore')     return '#E74C3C';
-    return '#363636';
+    return '#5A3A56';
   };
   const sw = (id) => id===selected ? '2' : '1.5';
   const mp = (id) => ({ className:`muscle-group-path${id===selected?' selected':''}`, style:{cursor:'pointer'}, onClick:()=>handleSelect(id) });
@@ -2036,17 +2038,17 @@ function MuscleMap({ state, dispatch }) {
     <svg viewBox="-50 -10 300 520" width="240" height="450" xmlns="http://www.w3.org/2000/svg" style={{overflow:'visible'}} role="img" aria-label="Front body muscle map">
       <defs>
         <radialGradient id="skinGradF" cx="50%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#FDEAED"/>
-          <stop offset="100%" stopColor="#EDB8C4"/>
+          <stop offset="0%" stopColor="#F8EAF2"/>
+          <stop offset="100%" stopColor="#E0B8D4"/>
         </radialGradient>
       </defs>
 
       {/* HEAD */}
-      <ellipse cx="100" cy="34" rx="20" ry="26" fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      <ellipse cx="100" cy="34" rx="20" ry="26" fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* NECK */}
-      <path d="M 90,58 C 89,66 89,74 91,80 L 109,80 C 111,74 111,66 110,58 Z" fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.2"/>
-      <path d="M 90,80 C 96,84 104,84 110,80" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.8" pointerEvents="none"/>
+      <path d="M 90,58 C 89,66 89,74 91,80 L 109,80 C 111,74 111,66 110,58 Z" fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.2"/>
+      <path d="M 90,80 C 96,84 104,84 110,80" fill="none" stroke="rgba(160,100,160,0.35)" strokeWidth="0.8" pointerEvents="none"/>
 
       {/* TORSO (hourglass female silhouette) */}
       <path d="
@@ -2067,7 +2069,7 @@ function MuscleMap({ state, dispatch }) {
         C 154,110 150,92 144,82
         C 134,80 116,78 100,78
         C 84,78 66,80 56,82 Z
-      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* LEFT ARM (separated from torso, hanging slightly out) */}
       <path d="
@@ -2083,7 +2085,7 @@ function MuscleMap({ state, dispatch }) {
         L 50,212 C 52,194 50,174 50,156
         C 52,138 54,118 56,100
         L 60,82 L 50,82 Z
-      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* RIGHT ARM (mirror) */}
       <path d="
@@ -2099,7 +2101,7 @@ function MuscleMap({ state, dispatch }) {
         L 150,212 C 148,194 150,174 150,156
         C 148,138 146,118 144,100
         L 140,82 L 150,82 Z
-      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* LEFT LEG */}
       <path d="
@@ -2117,9 +2119,9 @@ function MuscleMap({ state, dispatch }) {
         C 90,384 88,374 88,360
         C 86,344 84,326 84,304
         L 54,304 Z
-      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.5"/>
       {/* knee detail line */}
-      <path d="M 60,378 C 70,388 84,388 90,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+      <path d="M 60,378 C 70,388 84,388 90,378" fill="none" stroke="rgba(160,100,160,0.35)" strokeWidth="0.9" pointerEvents="none"/>
 
       {/* RIGHT LEG */}
       <path d="
@@ -2137,12 +2139,12 @@ function MuscleMap({ state, dispatch }) {
         C 110,384 112,374 112,360
         C 114,344 116,326 116,304
         L 146,304 Z
-      " fill="url(#skinGradF)" stroke="#C8909A" strokeWidth="1.5"/>
-      <path d="M 110,378 C 116,388 130,388 140,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+      " fill="url(#skinGradF)" stroke="#B890B0" strokeWidth="1.5"/>
+      <path d="M 110,378 C 116,388 130,388 140,378" fill="none" stroke="rgba(160,100,160,0.35)" strokeWidth="0.9" pointerEvents="none"/>
 
       {/* clavicle hints */}
-      <path d="M 92,82 C 80,80 66,82 56,86" fill="none" stroke="rgba(180,100,120,0.4)" strokeWidth="1.1" pointerEvents="none"/>
-      <path d="M 108,82 C 120,80 134,82 144,86" fill="none" stroke="rgba(180,100,120,0.4)" strokeWidth="1.1" pointerEvents="none"/>
+      <path d="M 92,82 C 80,80 66,82 56,86" fill="none" stroke="rgba(160,100,160,0.4)" strokeWidth="1.1" pointerEvents="none"/>
+      <path d="M 108,82 C 120,80 134,82 144,86" fill="none" stroke="rgba(160,100,160,0.4)" strokeWidth="1.1" pointerEvents="none"/>
 
       {/* === MUSCLE REGIONS (clickable) === */}
 
@@ -2165,8 +2167,8 @@ function MuscleMap({ state, dispatch }) {
         M 130,86 C 142,94 148,110 146,128 C 142,146 128,156 112,158 L 100,158
         L 100,108 C 104,98 108,90 114,84 L 130,86 Z
       " fill={getFill('chest')} stroke={getStroke('chest')} strokeWidth={sw('chest')} {...mp('chest')}/>
-      <path d="M 56,144 C 70,156 86,160 100,160 C 114,160 130,156 144,144" fill="none" stroke="rgba(180,100,120,0.25)" strokeWidth="0.9" pointerEvents="none"/>
-      <line x1="100" y1="84" x2="100" y2="158" stroke="rgba(180,100,120,0.3)" strokeWidth="0.7" pointerEvents="none"/>
+      <path d="M 56,144 C 70,156 86,160 100,160 C 114,160 130,156 144,144" fill="none" stroke="rgba(160,100,160,0.25)" strokeWidth="0.9" pointerEvents="none"/>
+      <line x1="100" y1="84" x2="100" y2="158" stroke="rgba(160,100,160,0.3)" strokeWidth="0.7" pointerEvents="none"/>
 
       {/* BICEPS — front upper arm */}
       <path d="
@@ -2198,11 +2200,11 @@ function MuscleMap({ state, dispatch }) {
         L 100,168 L 114,168 Z
       " fill={getFill('core')} stroke={getStroke('core')} strokeWidth={sw('core')} {...mp('core')}/>
       {[186,204,222,240].map(y=>(
-        <line key={y} x1="88" y1={y} x2="112" y2={y} stroke="rgba(180,100,120,0.22)" strokeWidth="0.7" pointerEvents="none"/>
+        <line key={y} x1="88" y1={y} x2="112" y2={y} stroke="rgba(160,100,160,0.22)" strokeWidth="0.7" pointerEvents="none"/>
       ))}
-      <line x1="100" y1="166" x2="100" y2="262" stroke="rgba(180,100,120,0.3)" strokeWidth="0.8" pointerEvents="none"/>
+      <line x1="100" y1="166" x2="100" y2="262" stroke="rgba(160,100,160,0.3)" strokeWidth="0.8" pointerEvents="none"/>
       {/* Hip curve */}
-      <path d="M 50,278 C 64,294 82,300 100,302 C 118,300 136,294 150,278" fill="none" stroke="rgba(180,100,120,0.32)" strokeWidth="1" pointerEvents="none"/>
+      <path d="M 50,278 C 64,294 82,300 100,302 C 118,300 136,294 150,278" fill="none" stroke="rgba(160,100,160,0.32)" strokeWidth="1" pointerEvents="none"/>
 
       {/* QUADS — front of thighs */}
       <path d="
@@ -2212,8 +2214,8 @@ function MuscleMap({ state, dispatch }) {
         M 144,310 C 148,332 148,358 144,382 L 114,382 C 114,358 116,332 118,310 L 144,310 Z
       " fill={getFill('quads')} stroke={getStroke('quads')} strokeWidth={sw('quads')} {...mp('quads')}/>
       {/* quad center lines */}
-      <line x1="71" y1="310" x2="71" y2="380" stroke="rgba(180,100,120,0.25)" strokeWidth="0.7" pointerEvents="none"/>
-      <line x1="129" y1="310" x2="129" y2="380" stroke="rgba(180,100,120,0.25)" strokeWidth="0.7" pointerEvents="none"/>
+      <line x1="71" y1="310" x2="71" y2="380" stroke="rgba(160,100,160,0.25)" strokeWidth="0.7" pointerEvents="none"/>
+      <line x1="129" y1="310" x2="129" y2="380" stroke="rgba(160,100,160,0.25)" strokeWidth="0.7" pointerEvents="none"/>
 
       {/* CALVES — tibialis + gastroc lateral peek */}
       <path d="
@@ -2235,16 +2237,16 @@ function MuscleMap({ state, dispatch }) {
     <svg viewBox="-50 -10 300 520" width="240" height="450" xmlns="http://www.w3.org/2000/svg" style={{overflow:'visible'}} role="img" aria-label="Back body muscle map">
       <defs>
         <radialGradient id="skinGradB" cx="50%" cy="35%" r="65%">
-          <stop offset="0%" stopColor="#FDEAED"/>
-          <stop offset="100%" stopColor="#EDB8C4"/>
+          <stop offset="0%" stopColor="#F8EAF2"/>
+          <stop offset="100%" stopColor="#E0B8D4"/>
         </radialGradient>
       </defs>
 
       {/* HEAD */}
-      <ellipse cx="100" cy="34" rx="20" ry="26" fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+      <ellipse cx="100" cy="34" rx="20" ry="26" fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* NECK */}
-      <path d="M 90,58 C 89,66 89,74 91,80 L 109,80 C 111,74 111,66 110,58 Z" fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.2"/>
+      <path d="M 90,58 C 89,66 89,74 91,80 L 109,80 C 111,74 111,66 110,58 Z" fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.2"/>
 
       {/* TORSO (same hourglass) */}
       <path d="
@@ -2265,7 +2267,7 @@ function MuscleMap({ state, dispatch }) {
         C 154,110 150,92 144,82
         C 134,80 116,78 100,78
         C 84,78 66,80 56,82 Z
-      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* LEFT ARM */}
       <path d="
@@ -2281,7 +2283,7 @@ function MuscleMap({ state, dispatch }) {
         L 50,212 C 52,194 50,174 50,156
         C 52,138 54,118 56,100
         L 60,82 L 50,82 Z
-      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* RIGHT ARM */}
       <path d="
@@ -2297,7 +2299,7 @@ function MuscleMap({ state, dispatch }) {
         L 150,212 C 148,194 150,174 150,156
         C 148,138 146,118 144,100
         L 140,82 L 150,82 Z
-      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
+      " fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.5"/>
 
       {/* LEFT LEG */}
       <path d="
@@ -2315,8 +2317,8 @@ function MuscleMap({ state, dispatch }) {
         C 90,384 88,374 88,360
         C 86,344 84,326 84,304
         L 54,304 Z
-      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
-      <path d="M 60,378 C 70,388 84,388 90,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+      " fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.5"/>
+      <path d="M 60,378 C 70,388 84,388 90,378" fill="none" stroke="rgba(160,100,160,0.35)" strokeWidth="0.9" pointerEvents="none"/>
 
       {/* RIGHT LEG */}
       <path d="
@@ -2334,8 +2336,8 @@ function MuscleMap({ state, dispatch }) {
         C 110,384 112,374 112,360
         C 114,344 116,326 116,304
         L 146,304 Z
-      " fill="url(#skinGradB)" stroke="#C8909A" strokeWidth="1.5"/>
-      <path d="M 110,378 C 116,388 130,388 140,378" fill="none" stroke="rgba(180,100,120,0.35)" strokeWidth="0.9" pointerEvents="none"/>
+      " fill="url(#skinGradB)" stroke="#B890B0" strokeWidth="1.5"/>
+      <path d="M 110,378 C 116,388 130,388 140,378" fill="none" stroke="rgba(160,100,160,0.35)" strokeWidth="0.9" pointerEvents="none"/>
 
       {/* === MUSCLE REGIONS === */}
 
@@ -2375,7 +2377,7 @@ function MuscleMap({ state, dispatch }) {
         L 136,134 Z
       " fill={getFill('back')} stroke={getStroke('back')} strokeWidth={sw('back')} {...mp('back')}/>
       {/* spine */}
-      <line x1="100" y1="80" x2="100" y2="214" stroke="rgba(180,100,120,0.4)" strokeWidth="0.9" pointerEvents="none"/>
+      <line x1="100" y1="80" x2="100" y2="214" stroke="rgba(160,100,160,0.4)" strokeWidth="0.9" pointerEvents="none"/>
 
       {/* TRICEPS — back of upper arm */}
       <path d="
@@ -2417,9 +2419,9 @@ function MuscleMap({ state, dispatch }) {
         C 122,252 134,246 144,250 Z
       " fill={getFill('glutes')} stroke={getStroke('glutes')} strokeWidth={sw('glutes')} {...mp('glutes')}/>
       {/* gluteal fold */}
-      <path d="M 48,322 C 64,338 82,342 100,342 C 118,342 136,338 152,322" fill="none" stroke="rgba(180,100,120,0.45)" strokeWidth="1" pointerEvents="none"/>
+      <path d="M 48,322 C 64,338 82,342 100,342 C 118,342 136,338 152,322" fill="none" stroke="rgba(160,100,160,0.45)" strokeWidth="1" pointerEvents="none"/>
       {/* center cleft */}
-      <line x1="100" y1="250" x2="100" y2="340" stroke="rgba(180,100,120,0.42)" strokeWidth="1" pointerEvents="none"/>
+      <line x1="100" y1="250" x2="100" y2="340" stroke="rgba(160,100,160,0.42)" strokeWidth="1" pointerEvents="none"/>
       {/* glute roundness highlights */}
       <path d="M 60,268 C 64,282 70,294 78,304" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.9" pointerEvents="none"/>
       <path d="M 140,268 C 136,282 130,294 122,304" fill="none" stroke="rgba(255,255,255,0.22)" strokeWidth="0.9" pointerEvents="none"/>
