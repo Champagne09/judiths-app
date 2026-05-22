@@ -318,7 +318,7 @@ select.form-input option { background: var(--surface2); }
 }
 .gold-header {
   background: linear-gradient(90deg,
-    #B8860B 0%, #DAA520 20%, #FFD700 35%, #FFF8DC 50%, #FFD700 65%, #DAA520 80%, #B8860B 100%);
+    #6A1B9A 0%, #8E24AA 20%, #C724B1 35%, #F0A6FF 50%, #C724B1 65%, #8E24AA 80%, #6A1B9A 100%);
   background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -334,8 +334,8 @@ select.form-input option { background: var(--surface2); }
   border-radius: var(--radius);
   padding: 32px 28px;
   margin-bottom: 28px;
-  background: linear-gradient(135deg, #FADADD 0%, #F5B8C0 40%, #FAEBD7 100%);
-  border: 1px solid #EAABB5;
+  background: linear-gradient(135deg, #F2D8EA 0%, #E0B8DC 40%, #F8E4EE 100%);
+  border: 1px solid #D4A4C4;
   box-shadow: 0 8px 32px rgba(196,129,138,0.18);
 }
 .home-hero::before {
@@ -375,17 +375,17 @@ select.form-input option { background: var(--surface2); }
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: linear-gradient(135deg, rgba(218,165,32,0.25), rgba(255,215,0,0.12));
-  border: 1px solid rgba(218,165,32,0.5);
+  background: linear-gradient(135deg, rgba(155,75,200,0.25), rgba(199,36,177,0.12));
+  border: 1px solid rgba(155,75,200,0.5);
   border-radius: 999px;
   padding: 8px 18px 8px 10px;
   margin-top: 16px;
-  box-shadow: 0 0 20px rgba(218,165,32,0.15);
+  box-shadow: 0 0 20px rgba(155,75,200,0.18);
 }
 .streak-num-pill {
   font-size: 28px;
   font-weight: 900;
-  color: #B8860B;
+  color: #8B2DA0;
   font-family: var(--mono);
   line-height: 1;
   min-width: 28px;
@@ -403,7 +403,7 @@ select.form-input option { background: var(--surface2); }
 }
 .today-split-chip {
   background: rgba(255,255,255,0.55);
-  border: 1px solid rgba(218,165,32,0.35);
+  border: 1px solid rgba(155,75,200,0.35);
   border-radius: var(--radius);
   padding: 16px 20px;
   min-width: 210px;
@@ -416,7 +416,7 @@ select.form-input option { background: var(--surface2); }
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: #B8860B;
+  color: #8B2DA0;
   margin-bottom: 6px;
 }
 .split-name {
@@ -441,9 +441,9 @@ select.form-input option { background: var(--surface2); }
 
 /* Program card on home */
 .program-card {
-  background: linear-gradient(135deg, #FFF5F7 0%, #FFF0E8 100%);
-  border: 1px solid #EAABB5;
-  border-left: 4px solid #DAA520;
+  background: linear-gradient(135deg, #FBF0F8 0%, #F4E4FA 100%);
+  border: 1px solid #D4A4C4;
+  border-left: 4px solid #A020F0;
   border-radius: var(--radius);
   padding: 20px;
   margin-bottom: 24px;
@@ -2018,11 +2018,11 @@ function MuscleMap({ state, dispatch }) {
     return (
       <g pointerEvents="none">
         <line x1={data.from[0]} y1={data.from[1]} x2={data.to[0]} y2={data.to[1]}
-              stroke="#B8860B" strokeWidth="1.3" strokeDasharray="3,2"/>
-        <circle cx={data.from[0]} cy={data.from[1]} r="3.5" fill="#FFD700" stroke="#B8860B" strokeWidth="1.2"/>
+              stroke="#8B2DA0" strokeWidth="1.3" strokeDasharray="3,2"/>
+        <circle cx={data.from[0]} cy={data.from[1]} r="3.5" fill="#C724B1" stroke="#8B2DA0" strokeWidth="1.2"/>
         <rect x={rectX} y={data.to[1]-12} width={labelW} height="24" rx="12"
-              fill="#FFFBEA" stroke="#DAA520" strokeWidth="1.4"
-              filter="drop-shadow(0 2px 4px rgba(184,134,11,0.25))"/>
+              fill="#FAF0FF" stroke="#A020F0" strokeWidth="1.4"
+              filter="drop-shadow(0 2px 4px rgba(139,45,160,0.25))"/>
         <text x={rectX + labelW/2} y={data.to[1]+4.5} textAnchor="middle"
               fontSize="11" fontWeight="700" fill="#5C1A2A" fontFamily="Inter,sans-serif">
           {data.label}
